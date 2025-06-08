@@ -9,7 +9,6 @@ declare( strict_types = 1 );
 
 namespace WPGraphQL\Login;
 
-use Exception;
 use WPGraphQL\Login\Mutation;
 use WPGraphQL\Login\Type\Enum;
 use WPGraphQL\Login\Type\Input;
@@ -85,6 +84,7 @@ class TypeRegistry {
 		$classes_to_register = [
 			Enum\GoogleProviderPromptTypeEnum::class,
 			Enum\ProviderEnum::class,
+			Enum\ProviderTypeEnum::class,
 		];
 
 		/**
@@ -245,8 +245,14 @@ class TypeRegistry {
 
 		foreach ( $classes_to_register as $class ) {
 			if ( ! is_a( $class, GraphQLType::class, true ) ) {
-				// translators: PHP class.
-				throw new Exception( sprintf( esc_html__( 'To be registered to the WPGraphQL schema, %s needs to implement \WPGraphQL\Login\Vendor\AxeWP\GraphQL\Interfaces\GraphQLType.', 'wp-graphql-headless-login' ), esc_html( $class ) ) );
+				throw new \Exception(
+					sprintf(
+						// translators: %s is the class name, %s is the interface name.
+						esc_html__( 'To be registered to the WPGraphQL schema, %1$s needs to implement %2$s.', 'wp-graphql-headless-login' ),
+						esc_html( $class ),
+						esc_html( GraphQLType::class )
+					)
+				);
 			}
 
 			// Register the type to the GraphQL schema.

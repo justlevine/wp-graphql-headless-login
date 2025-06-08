@@ -128,7 +128,6 @@
 			"test -f ./bin/strauss.phar || curl -o bin/strauss.phar -L -C - https://github.com/BrianHenryIE/strauss/releases/download/0.19.4/strauss.phar"
 		],
 		"prefix-namespaces": [
-			"@strauss-install",
 			"@php bin/strauss.phar",
 			"@composer dump-autoload"
 		],
@@ -143,7 +142,7 @@
 			"@prefix-namespaces"
 		],
 		"post-update-cmd": [
-			"@prefix-namespaces"
+			"@post-install-cmd"
 		]
 	},
 	"archive": {
