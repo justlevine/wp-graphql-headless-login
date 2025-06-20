@@ -23,3 +23,19 @@
 		}
 	}
 }
+
+.header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 1.25rem;
+
+	div h2 {
+		font-size: 1.5rem;
+		margin: 1rem 0;
+	}
+
+	div p {
+		font-size: .85rem;
+	}
+}

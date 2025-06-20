@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { Button, PanelBody, Spinner } from '@wordpress/components';
 import { Fields } from '@/admin/components/fields';
 import { useSettings } from '@/admin/contexts/settings-context';
+import { ScreenHeader } from './screen-header';
 
 export const SettingsScreen = ( { settingKey }: { settingKey: string } ) => {
 	const {
@@ -81,8 +82,32 @@ export const SettingsScreen = ( { settingKey }: { settingKey: string } ) => {
 		return null;
 	}
 
+	const SaveButton = () => (
+		<Button
+			isBusy={ isSaving }
+			onClick={ save }
+			disabled={ ! isDirty || isSaving }
+			variant="primary"
+			style={ {
+				height: '40px',
+				paddingLeft: '16px',
+				paddingRight: '16px',
+			} }
+		>
+			{ __( 'Save changes', 'wp-graphql-headless-login' ) }
+			{ isSaving && <Spinner /> }
+		</Button>
+	);
+
 	return (
 		<>
+			<ScreenHeader
+				title={ wpGraphQLLogin?.settings[ settingKey ]?.title }
+				description={
+					wpGraphQLLogin?.settings[ settingKey ]?.description
+				}
+				actions={ <SaveButton /> }
+			/>
 			<PanelBody>
 				<Fields
 					fields={ optionsSchema }
@@ -92,15 +117,7 @@ export const SettingsScreen = ( { settingKey }: { settingKey: string } ) => {
 					validateConditionalLogic={ validateConditionalLogic }
 				/>
 			</PanelBody>
-			<Button
-				isBusy={ isSaving }
-				onClick={ save }
-				disabled={ ! isDirty || isSaving }
-				variant="primary"
-			>
-				{ __( 'Save', 'wp-graphql-headless-login' ) }
-				{ isSaving && <Spinner /> }
-			</Button>
+			<SaveButton />
 		</>
 	);
 };
