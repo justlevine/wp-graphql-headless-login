@@ -22,15 +22,10 @@ use WPGraphQL\Model\Model;
  * @property ?string $name
  * @property ?int    $order
  * @property string  $provider
+ *
+ * @extends \WPGraphQL\Model\Model<\WPGraphQL\Login\Auth\Client>
  */
 class Client extends Model {
-	/**
-	 * Stores the incoming Client to be modeled
-	 *
-	 * @var \WPGraphQL\Login\Auth\Client $data
-	 */
-	protected $data;
-
 	/**
 	 * Client constructor.
 	 *
@@ -61,18 +56,19 @@ class Client extends Model {
 	 */
 	protected function init() {
 		if ( empty( $this->fields ) ) {
-			$config = $this->data->get_config();
+			$provider      = $this->data->get_provider();
+			$provider_type = $provider->get_provider_type();
 
 			$slug = $this->data->get_provider_slug();
 
 			$this->fields = [
-				'authorizationUrl' => fn () => $this->data->get_authorization_url(),
-				'clientOptions'    => static fn () => $config['clientOptions'] + [ '__typename' => $slug ],
-				'clientId'         => static fn () => $config['clientOptions']['clientId'] ?? null,
-				'isEnabled'        => static fn () => ! empty( $config['isEnabled'] ),
-				'loginOptions'     => static fn () => $config['loginOptions'] + [ '__typename' => $slug ],
-				'name'             => static fn () => $config['name'] ?? null,
-				'order'            => static fn () => $config['order'] ?? null,
+				'authorizationUrl' => static fn () => method_exists( $provider_type, 'get_authorization_url' ) ? $provider_type->get_authorization_url( $provider ) : null,
+				'clientOptions'    => static fn () => $provider->client_options + [ '__typename' => $slug ],
+				'clientId'         => static fn () => $$provider->client_options['clientId'] ?? null,
+				'isEnabled'        => static fn () => ! empty( $provider->is_enabled ),
+				'loginOptions'     => static fn () => $provider->login_options + [ '__typename' => $slug ],
+				'name'             => static fn () => $provider->name ?? null,
+				'order'            => static fn () => $provider->order ?? null,
 				'provider'         => static fn () => $slug,
 			];
 		}

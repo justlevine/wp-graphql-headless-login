@@ -1,8 +1,159 @@
-.ftjQzMCOi3nyOhVCafcP{height:auto;max-width:100%}
-.X33eI7IqIu9vA70aUBYr{display:flex}.h_MlOFn6npizLjVSGKTw{opacity:.85;transform:rotate(45deg)}.components-button.Imo7qRxqF81yxZJ6tWwN{border-bottom:2px solid;-o-border-image:linear-gradient(to right,transparent 0,var(--wp-admin-theme-color-darker-20) 100%) 1;border-image:linear-gradient(to right,transparent 0,var(--wp-admin-theme-color-darker-20) 100%) 1}.components-button.Imo7qRxqF81yxZJ6tWwN.is-tertiary{color:var(--wp-admin-theme-color-darker-20)}.components-button.Imo7qRxqF81yxZJ6tWwN:focus:not(:disabled){box-shadow:none}.Prtzu3hPBp5xAS7XSKxZ{background-color:#3c434a;border-color:1px solid var(--wp-admin-theme-color-darker-20);border-radius:50%;display:inline-block;height:.5em;margin-right:.5em;width:.5em}
-.lghOuE3jVD20udRv8ib7{align-items:center;display:flex;flex-wrap:wrap;justify-content:space-between;max-width:960px}.lghOuE3jVD20udRv8ib7 svg{flex:0 0 auto}.KrbMjTYAeZBM3uoVq0mO{flex:1 0 auto}.KrbMjTYAeZBM3uoVq0mO h1{margin-right:12px}.eQCzBDGD0s6DcAiwfhSo{margin:auto auto 16px}
-.yMxOV1PEJdGbJZTp3kP8 .components-snackbar{bottom:.5rem;position:fixed}
-.BxlpBjGYk_tWlzwOf33E{font-size:12px;font-style:italic;margin-block-start:.5em}
-.avlawdsXKOLmp_izGG8Q{max-width:960px}.avlawdsXKOLmp_izGG8Q .components-panel,.avlawdsXKOLmp_izGG8Q.components-panel{background:none;border:none}.avlawdsXKOLmp_izGG8Q .components-panel+.components-panel,.avlawdsXKOLmp_izGG8Q.components-panel+.components-panel{margin-top:2rem}.avlawdsXKOLmp_izGG8Q .components-panel .components-panel__body,.avlawdsXKOLmp_izGG8Q .components-panel.components-panel__body,.avlawdsXKOLmp_izGG8Q.components-panel .components-panel__body,.avlawdsXKOLmp_izGG8Q.components-panel.components-panel__body{background:#fff;border:1px solid #e2e4e7;margin:1rem 0}.avlawdsXKOLmp_izGG8Q .components-panel .components-panel__body-title .components-button,.avlawdsXKOLmp_izGG8Q .components-panel.components-panel__body-title .components-button,.avlawdsXKOLmp_izGG8Q.components-panel .components-panel__body-title .components-button,.avlawdsXKOLmp_izGG8Q.components-panel.components-panel__body-title .components-button{font-size:1.25rem}.SuTRA4ED2q_Nm0W2sDEu{align-items:center;display:flex;justify-content:space-between;margin-bottom:1.25rem}.SuTRA4ED2q_Nm0W2sDEu div h2{font-size:1.5rem;margin:1rem 0}.SuTRA4ED2q_Nm0W2sDEu div p{font-size:.85rem}
-.OZhxN0zm9nplD2VLQyMl{align-items:center;background-color:#f6f7f7;border:1px solid #e0e0e0;border-radius:.5rem;display:flex;flex-direction:row;justify-content:center;margin-top:2rem;padding:1rem}.goUopcX8T4L6IEUIdkvQ{color:#007cba;font-size:.9rem;text-decoration:none!important}
-#wpgraphql_login_settings .components-placeholder{background:#f1f1f1}#wpgraphql_login_settings .components-base-control__help{margin-top:.5rem}#wpgraphql_login_settings .components-panel__row>div{flex-grow:1;margin-left:1rem}#wpgraphql_login_settings .components-panel__row>div:last-of-type{margin-left:0}
+/*!*********************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./packages/admin/components/ui/svg-icon/styles.module.scss ***!
+  \*********************************************************************************************************************************************************************************************************************************************************************************/
+.ftjQzMCOi3nyOhVCafcP {
+  max-width: 100%;
+  height: auto;
+}
+/*!****************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./packages/admin/components/layout/header/menu/styles.module.scss ***!
+  \****************************************************************************************************************************************************************************************************************************************************************************************/
+.X33eI7IqIu9vA70aUBYr {
+  display: flex;
+}
+
+.h_MlOFn6npizLjVSGKTw {
+  transform: rotate(45deg);
+  opacity: 0.85;
+}
+
+.components-button.Imo7qRxqF81yxZJ6tWwN {
+  border-bottom: 2px solid;
+  -o-border-image: linear-gradient(to right, transparent 0%, var(--wp-admin-theme-color-darker-20) 100%) 1;
+     border-image: linear-gradient(to right, transparent 0%, var(--wp-admin-theme-color-darker-20) 100%) 1;
+}
+.components-button.Imo7qRxqF81yxZJ6tWwN.is-tertiary {
+  color: var(--wp-admin-theme-color-darker-20);
+}
+.components-button.Imo7qRxqF81yxZJ6tWwN:focus:not(:disabled) {
+  box-shadow: none;
+}
+
+.Prtzu3hPBp5xAS7XSKxZ {
+  background-color: #3c434a;
+  border-color: 1px solid var(--wp-admin-theme-color-darker-20);
+  border-radius: 50%;
+  height: 0.5em;
+  width: 0.5em;
+  display: inline-block;
+  margin-right: 0.5em;
+}
+/*!***********************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./packages/admin/components/layout/header/styles.module.scss ***!
+  \***********************************************************************************************************************************************************************************************************************************************************************************/
+.lghOuE3jVD20udRv8ib7 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 960px;
+}
+.lghOuE3jVD20udRv8ib7 svg {
+  flex: 0 0 auto;
+}
+
+.KrbMjTYAeZBM3uoVq0mO {
+  flex: 1 0 auto;
+}
+.KrbMjTYAeZBM3uoVq0mO h1 {
+  margin-right: 12px;
+}
+
+.eQCzBDGD0s6DcAiwfhSo {
+  margin: auto auto 16px;
+}
+/*!*****************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./packages/admin/components/notices/styles.module.scss ***!
+  \*****************************************************************************************************************************************************************************************************************************************************************************/
+.yMxOV1PEJdGbJZTp3kP8 .components-snackbar {
+  bottom: 0.5rem;
+  position: fixed;
+}
+/*!*****************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./packages/admin/components/ui/form-token-field/styles.module.scss ***!
+  \*****************************************************************************************************************************************************************************************************************************************************************************************/
+.BxlpBjGYk_tWlzwOf33E {
+  margin-block-start: 0.5em;
+  font-size: 12px;
+  font-style: italic;
+}
+/*!****************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./packages/admin/components/screen/styles.module.scss ***!
+  \****************************************************************************************************************************************************************************************************************************************************************************/
+.avlawdsXKOLmp_izGG8Q {
+  max-width: 960px;
+}
+.avlawdsXKOLmp_izGG8Q.components-panel,
+.avlawdsXKOLmp_izGG8Q .components-panel {
+  background: none;
+  border: none;
+}
+.avlawdsXKOLmp_izGG8Q.components-panel + .components-panel,
+.avlawdsXKOLmp_izGG8Q .components-panel + .components-panel {
+  margin-top: 2rem;
+}
+.avlawdsXKOLmp_izGG8Q.components-panel.components-panel__body,
+.avlawdsXKOLmp_izGG8Q.components-panel .components-panel__body,
+.avlawdsXKOLmp_izGG8Q .components-panel.components-panel__body,
+.avlawdsXKOLmp_izGG8Q .components-panel .components-panel__body {
+  background: #fff;
+  border: 1px solid #e2e4e7;
+  margin: 1rem 0;
+}
+.avlawdsXKOLmp_izGG8Q.components-panel.components-panel__body-title .components-button,
+.avlawdsXKOLmp_izGG8Q.components-panel .components-panel__body-title .components-button,
+.avlawdsXKOLmp_izGG8Q .components-panel.components-panel__body-title .components-button,
+.avlawdsXKOLmp_izGG8Q .components-panel .components-panel__body-title .components-button {
+  font-size: 1.25rem;
+}
+
+.SuTRA4ED2q_Nm0W2sDEu {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+.SuTRA4ED2q_Nm0W2sDEu div h2 {
+  font-size: 1.5rem;
+  margin: 1rem 0;
+}
+.SuTRA4ED2q_Nm0W2sDEu div p {
+  font-size: 0.85rem;
+}
+/*!*************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./packages/admin/components/provider-config/styles.module.scss ***!
+  \*************************************************************************************************************************************************************************************************************************************************************************************/
+.OZhxN0zm9nplD2VLQyMl {
+  margin-top: 2rem;
+  padding: 1rem;
+  background-color: #f6f7f7;
+  border-radius: 0.5rem;
+  border: 1px solid #e0e0e0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+
+.goUopcX8T4L6IEUIdkvQ {
+  font-size: 0.9rem;
+  color: #007cba;
+  text-decoration: none !important;
+}
+/*!**************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./packages/admin/admin.scss ***!
+  \**************************************************************************************************************************************************************************************************************************************************/
+#wpgraphql_login_settings .components-placeholder {
+  background: #f1f1f1;
+}
+#wpgraphql_login_settings .components-base-control__help {
+  margin-top: 0.5rem;
+}
+#wpgraphql_login_settings .components-panel__row > div {
+  flex-grow: 1;
+  margin-left: 1rem;
+}
+#wpgraphql_login_settings .components-panel__row > div:last-of-type {
+  margin-left: 0;
+}

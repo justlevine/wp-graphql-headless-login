@@ -50,6 +50,7 @@ export const ProviderScreen = () => {
 					onClose={ closeAddModal }
 					onAdd={ addProvider }
 					providerTypes={ PROVIDER_TYPES }
+					configureModal={ ConfigureProviderModal }
 				/>
 			</>
 		);

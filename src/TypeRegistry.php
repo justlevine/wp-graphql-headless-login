@@ -84,6 +84,7 @@ class TypeRegistry {
 		$classes_to_register = [
 			Enum\GoogleProviderPromptTypeEnum::class,
 			Enum\ProviderEnum::class,
+			Enum\ProviderTypeEnum::class,
 		];
 
 		/**

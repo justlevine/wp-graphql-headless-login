@@ -27,6 +27,8 @@ namespace WPGraphQL\Login\Auth\ProviderType;
  * }
  */
 abstract class AbstractProviderType {
+	use ProviderTypeStaticTrait;
+
 	/**
 	 * Get the provider type.
 	 *
@@ -80,85 +82,25 @@ abstract class AbstractProviderType {
 	abstract public function get_user_from_data( array $data );
 
 	/**
-	 * Map provider user data to WordPress user data.
+	 * Process and validate the input data passed to the GraphQL mutation.
 	 *
-	 * @param array<string,mixed> $data The provider user data.
-	 * @return array<string,mixed> The WordPress user data.
+	 * @param array<string,mixed> $input The mutation input.
+	 *
+	 * @return array<string,mixed>
 	 */
-	abstract protected function map_user_data( array $data ): array;
+	abstract protected function prepare_mutation_input( array $input ): array;
 
 	/**
-	 * Validate a single option against a schema.
-	 *
-	 * @param string                $key    The option key.
-	 * @param mixed                 $value  The option value.
-	 * @param array<string,Setting> $schema The schema to validate against.
-	 *
-	 * @return true|\WP_Error True if valid, WP_Error if invalid.
+	 * The constructor
 	 */
-	public static function validate_option( string $key, $value, array $schema ) {
-		// Check if the key exists in the schema.
-		if ( ! isset( $schema[ $key ] ) ) {
-			// translators: %s is the field key.
-			return new \WP_Error( 'unknown_field', sprintf( __( 'Unknown field: %s', 'wp-graphql-headless-login' ), $key ) );
-		}
-
-		$setting = $schema[ $key ];
-
-		// Check if required field is missing.
-		if ( null === $value && ! empty( $setting['required'] ) ) {
-			// translators: %s is the field key.
-			return new \WP_Error( 'missing_required_field', sprintf( __( 'Missing required field: %s', 'wp-graphql-headless-login' ), $key ) );
-		}
-
-		// Skip validation if value is null and field is not required.
-		if ( null === $value ) {
-			return true;
-		}
-
-		// Validate the value if a callback is provided.
-		if ( isset( $setting['validate_callback'] ) ) {
-			$validation_result = $setting['validate_callback']( $value );
-
-			if ( true !== $validation_result ) {
-				return $validation_result instanceof \WP_Error ? $validation_result : new \WP_Error( 'invalid_field_value', $validation_result );
-			}
-		}
-
-		// Type validation.
-		return static::validate_type( $value, $setting['type'] );
-	}
-
-	/**
-	 * Sanitize a single option against a schema.
-	 *
-	 * @param string                $key    The option key.
-	 * @param mixed                 $value  The option value.
-	 * @param array<string,Setting> $schema The schema to validate against.
-	 *
-	 * @return mixed The sanitized value.
-	 * @throws \InvalidArgumentException If the option key doesn't exist in the schema.
-	 */
-	public static function sanitize_option( string $key, $value, array $schema ) {
-		// Check if the key exists in the schema.
-		if ( ! isset( $schema[ $key ] ) ) {
-			throw new \InvalidArgumentException(
-				sprintf(
-					// translators: %s is the field key.
-					esc_html__( 'Unknown field: %s', 'wp-graphql-headless-login' ),
-					esc_html( $key )
-				)
-			);
-		}
-
-		$setting = $schema[ $key ];
-
-		// Apply sanitization if a callback is provided.
-		if ( isset( $setting['sanitize_callback'] ) && is_callable( $setting['sanitize_callback'] ) ) {
-			return $setting['sanitize_callback']( $value );
-		}
-
-		return $value;
+	public function __construct() {
+		/**
+		 * Fires after the provider is initialized.
+		 *
+		 * @param string $slug            The provider slug.
+		 * @param self   $provider_config The ProviderConfig static class.
+		 */
+		do_action( 'graphql_login_after_provider_type_init', static::get_slug(), $this );
 	}
 
 	/**
@@ -254,5 +196,57 @@ abstract class AbstractProviderType {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Gets the WPGraphQL fields config for the provider settings.
+	 *
+	 * Should probably be overwritten by the child ProviderConfig.
+	 *
+	 * @return array<string,mixed>
+	 */
+	protected static function client_options_fields(): array {
+		return [];
+	}
+
+	/**
+	 * Returns the schema properties for the client options.
+	 *
+	 * Adds the optional 'help' and `required' property key for use on the frontend. This will be stripped when registering the setting.
+	 *
+	 * Should probably be overwritten by the child ProviderConfig.
+	 *
+	 * @see https://developer.wordpress.org/rest-api/extending-the-rest-api/schema
+	 *
+	 * @return array<string,mixed>
+	 */
+	protected static function client_options_schema(): array {
+		return [];
+	}
+
+	/**
+	 * Gets the WPGraphQL fields config for the provider settings.
+	 *
+	 * Should probably be overwritten by the child ProviderConfig.
+	 *
+	 * @return array<string,mixed>
+	 */
+	protected static function login_options_fields(): array {
+		return [];
+	}
+
+	/**
+	 * Returns the schema properties for the provider settings.
+	 *
+	 * Adds the optional 'help' property key for use on the frontend. This will be stripped when registering the setting.
+	 *
+	 * Should probably be overwritten by the child ProviderConfig.
+	 *
+	 * @see https://developer.wordpress.org/rest-api/extending-the-rest-api/schema
+	 *
+	 * @return array<string,mixed>
+	 */
+	protected static function login_options_schema(): array {
+		return [];
 	}
 }
