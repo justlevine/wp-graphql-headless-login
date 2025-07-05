@@ -14,6 +14,7 @@ use WPGraphQL\Login\Admin\Settings\ProviderSettings;
 use WPGraphQL\Login\Admin\Settings\RestController;
 use WPGraphQL\Login\Admin\Upgrade\UpgradeRegistry;
 use WPGraphQL\Login\Auth\TokenManager;
+use WPGraphQL\Login\Providers\ProviderRegistry;
 
 /**
  * Class - Settings
@@ -41,7 +42,6 @@ class Settings {
 		add_action( 'init', [ SettingsRegistry::class, 'register_settings' ] );
 
 		add_action( 'rest_api_init', [ self::class, 'register_rest_routes' ] );
-		add_action( 'init', [ self::class, 'register_provider_settings' ] );
 		add_action( 'graphql_register_settings', [ self::class, 'register_settings_tab' ] );
 		add_action( 'admin_enqueue_scripts', [ self::class, 'register_admin_scripts' ] );
 
@@ -55,20 +55,6 @@ class Settings {
 	public static function register_rest_routes(): void {
 		$controller = new RestController();
 		$controller->register_routes();
-	}
-
-	/**
-	 * Register the settings to WordPress.
-	 */
-	public static function register_provider_settings(): void {
-		$settings = ProviderSettings::get_settings_args();
-		foreach ( $settings as $setting_name => $args ) {
-			register_setting(
-				self::$option_group,
-				$setting_name,
-				$args
-			);
-		}
 	}
 
 	/**
@@ -156,28 +142,54 @@ class Settings {
 	 * @return array<string,mixed>
 	 */
 	private static function get_settings_data(): array {
-		// Add meta about the secret without exposing it.
-		$secret = [
+		return [
+			'secret'    => self::get_secret_data(),
+			'settings'  => self::get_screen_settings_data(),
+			'providers' => self::get_providers_data(),
+			'nonce'     => wp_create_nonce( 'wp_graphql_settings' ),
+		];
+	}
+
+	/**
+	 * Gets the secret data for the initial population of the settings.
+	 *
+	 * @return array<string,mixed>
+	 */
+	private static function get_secret_data(): array {
+		return [
 			'hasKey'     => (bool) TokenManager::get_secret_key(),
 			'isConstant' => defined( 'WPGRAPHQL_LOGIN_JWT_SECRET_KEY' ) && ! empty( WPGRAPHQL_LOGIN_JWT_SECRET_KEY ),
 		];
+	}
 
-		$setting_instances = SettingsRegistry::get_all();
+	/**
+	 * Gets the screen settings for hydrating the admin.
+	 *
+	 * @return array<string,mixed>
+	 */
+	private static function get_screen_settings_data(): array {
+		// Add the provider screen.
+		$provider_screen = new ProviderSettings();
+		$settings        = [
+			$provider_screen::get_slug() => $provider_screen->get_render_config(),
+		];
 
-		$settings = [];
-		foreach ( $setting_instances as $instance ) {
-			$settings[ $instance::get_slug() ] = $instance->get_render_config();
+		// Add the registered setting screens.
+		$screens = SettingsRegistry::get_all();
+		foreach ( $screens as $screen ) {
+			$settings[ $screen::get_slug() ] = $screen->get_render_config();
 		}
 
-		return [
-			'secret'   => $secret,
-			'settings' => array_merge(
-				$settings,
-				[
-					'providers' => ProviderSettings::get_config(),
-				],
-			),
-			'nonce'    => wp_create_nonce( 'wp_graphql_settings' ),
-		];
+		return $settings;
+	}
+
+	/**
+	 * Gets the sanitized providers for the initial population of the providers screen.
+	 *
+	 * @return array<string,mixed>
+	 */
+	private static function get_providers_data(): array {
+		// @todo: sanitize special fields.
+		return ProviderRegistry::get_instance()->get_providers( false );
 	}
 }

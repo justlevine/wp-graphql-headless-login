@@ -35,6 +35,24 @@ namespace WPGraphQL\Login\Admin\Settings;
  *  sanitize_callback: callable(mixed): mixed,
  *  validate_callback?: callable(mixed): (\WP_Error|true),
  * }
+ *
+ * @phpstan-type RenderFieldSetting array{
+ *  description: string,
+ *  label: string,
+ *  type: string,
+ *  conditionalLogic?: array{
+ *    slug: string,
+ *    operator: '==' | '!=' | '>' | '<' | '>=' | '<=',
+ *    value: string|bool|int|float
+ *  },
+ *  controlOverrides?: array<string,mixed>,
+ *  controlType?: 'formTokenField'|'jwtSecret'|'select'|'text'|'toggle',
+ *  default?: mixed,
+ *  help?: string,
+ *  isAdvanced?: bool,
+ *  order?: int,
+ *  required?: bool,
+ * }
  */
 abstract class AbstractSettings {
 	/**
@@ -129,22 +147,12 @@ abstract class AbstractSettings {
 	/**
 	 * Get the config used to render the settings in the UI.
 	 *
-	 * @return array{title:string,description:string,fields:array<string,array{
-	 *  description: string,
+	 * @return array{
+	 *  title: string,
 	 *  label: string,
-	 *  type: string,
-	 *  conditionalLogic?: array{
-	 *    slug: string,
-	 *    operator: '==' | '!=' | '>' | '<' | '>=' | '<=',
-	 *    value: string|bool|int|float
-	 *  },
-	 *  controlOverrides?: array<string,mixed>,
-	 *  controlType?: string,
-	 *  default?: mixed,
-	 *  help?: string,
-	 *  isAdvanced?: bool,
-	 *  required?: bool,
-	 * }>}
+	 *  description: string,
+	 *  fields: array<string,RenderFieldSetting>
+	 * }
 	 */
 	public function get_render_config(): array {
 		$config = $this->get_config();

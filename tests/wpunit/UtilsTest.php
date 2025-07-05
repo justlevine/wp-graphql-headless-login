@@ -156,53 +156,6 @@ class UtilsTest extends \lucatume\WPBrowser\TestCase\WPTestCase {
 	}
 
 	/**
-	 * Tests Utils::get_provider_settings()
-	 *
-	 * @covers \WPGraphQL\Login\Utils\Utils::get_all_provider_settings
-	 */
-	public function testGetAllProviderSettings() {
-		// Test default value ([])
-		$actual = Utils::get_all_provider_settings();
-
-		$this->assertArrayHasKey( 'facebook', $actual, 'Default value have the keys for all providers' );
-
-		// Test db value.
-		$expected = [
-			'facebook' => [
-				'name'      => 'Facebook',
-				'isEnabled' => false,
-			],
-			'google'   => [
-				'name'      => 'Google',
-				'isEnabled' => false,
-			],
-		];
-
-		update_option( ProviderSettings::$settings_prefix . 'facebook', $expected['facebook'] );
-		update_option( ProviderSettings::$settings_prefix . 'google', $expected['google'] );
-		$this->tester->reset_utils_properties();
-
-		$actual = Utils::get_all_provider_settings();
-
-		$this->assertEquals( $expected['facebook'], $actual['facebook'], 'DB value should exist' );
-		$this->assertEquals( $expected['google'], $actual['google'], 'DB value should exist' );
-
-		// Test filter.
-		add_filter( 'graphql_login_provider_settings', [ $this, 'provider_settings_filter_callback' ], 10, 2 );
-		$this->tester->reset_utils_properties();
-
-		$actual = Utils::get_all_provider_settings();
-
-		$this->assertTrue( $actual['facebook']['isEnabled'], 'Filter value should be false' );
-
-		remove_filter( 'graphql_login_provider_settings', [ $this, 'provider_settings_filter_callback' ], 10 );
-
-		// cleanup db
-		delete_option( ProviderSettings::$settings_prefix . 'facebook' );
-		delete_option( ProviderSettings::$settings_prefix . 'google' );
-	}
-
-	/**
 	 * Tests Utils::is_current_user()
 	 *
 	 * @covers \WPGraphQL\Login\Utils\Utils::is_current_user

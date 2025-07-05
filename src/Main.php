@@ -11,7 +11,7 @@ namespace WPGraphQL\Login;
 
 use WPGraphQL\Login\Admin\Settings;
 use WPGraphQL\Login\Admin\UserProfile;
-use WPGraphQL\Login\Auth\ProviderRegistry;
+use WPGraphQL\Login\Providers\ProviderRegistry;
 use WPGraphQL\Login\Vendor\AxeWP\GraphQL\Helper\Helper;
 
 if ( ! class_exists( \WPGraphQL\Login\Main::class ) ) :
@@ -64,7 +64,7 @@ if ( ! class_exists( \WPGraphQL\Login\Main::class ) ) :
 			WoocommerceSchemaFilters::init();
 			Settings::init();
 			UserProfile::init();
-			ProviderRegistry::get_instance();
+			ProviderRegistry::init();
 
 			// Initialize plugin type registry.
 			add_action( get_graphql_register_action(), [ TypeRegistry::class, 'init' ] );

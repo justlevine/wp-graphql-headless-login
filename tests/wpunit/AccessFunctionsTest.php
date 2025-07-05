@@ -40,28 +40,4 @@ class AccessFunctionsTest extends \lucatume\WPBrowser\TestCase\WPTestCase {
 		// cleanup db
 		delete_option( PluginSettings::get_slug() );
 	}
-
-	/**
-	 * Tests graphql_login_get_provider_settings()
-	 *
-	 * @covers graphql_login_get_provider_settings()
-	 */
-	public function testGetProviderSettings(): void {
-		$expected = [
-			'name'      => 'Facebook',
-			'isEnabled' => false,
-		];
-
-		update_option( ProviderSettings::$settings_prefix . 'facebook', $expected );
-
-		// reset Utils::providers
-		$this->tester->reset_utils_properties();
-
-		$actual = graphql_login_get_provider_settings( 'facebook' );
-
-		$this->assertEquals( $expected, $actual );
-
-		// cleanup db
-		delete_option( ProviderSettings::$settings_prefix . 'facebook' );
-	}
 }

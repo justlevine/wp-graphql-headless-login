@@ -1,8 +1,6 @@
 <?php
 /**
- * Registers the Provider Settings
- *
- * @todo This class should be removed when Providers are moved out of the settings.
+ * Registers the Providers Settings
  *
  * @package WPGraphQL\Login\Admin\Settings
  * @since 0.0.6
@@ -12,195 +10,147 @@ declare( strict_types = 1 );
 
 namespace WPGraphQL\Login\Admin\Settings;
 
-use WPGraphQL\Login\Auth\ProviderRegistry;
+use WPGraphQL\Login\Providers\ProviderRegistry;
 
 /**
  * Class ProviderSettings
  *
- * @phpstan-import-type Setting from \WPGraphQL\Login\Admin\Settings\AbstractSettings
+ * @phpstan-import-type RenderFieldSetting from \WPGraphQL\Login\Admin\Settings\AbstractSettings
  */
 class ProviderSettings {
 	/**
-	 * The settings key used to store the Clients config.
-	 *
-	 * @var string
+	 * The screen slug.
 	 */
-	public static string $settings_prefix = 'wpgraphql_login_provider_';
-
-	/**
-	 * The setting configuration.
-	 *
-	 * @var array<string,array<string,Setting>>
-	 */
-	private static array $config = [];
-
-	/**
-	 * The args used to register the settings.
-	 *
-	 * @var array<string,mixed>
-	 */
-	private static array $args = [];
-
-	/**
-	 * Gets the setting configuration.
-	 *
-	 * @return array<string,array<string,Setting>>
-	 */
-	public static function get_config(): array {
-		if ( empty( self::$config ) ) {
-			$providers = ProviderRegistry::get_instance()->get_registered_providers();
-
-			$config = [];
-
-			foreach ( $providers as $slug => $provider ) {
-				$config[ self::$settings_prefix . $slug ] = [
-					'name'          => [
-						'description'       => __( 'The provider name.', 'wp-graphql-headless-login' ),
-						'label'             => __( 'Client Label', 'wp-graphql-headless-login' ),
-						'type'              => 'string',
-						'default'           => $provider::get_name(),
-						'help'              => __( 'This is the name that will be displayed to the user.', 'wp-graphql-headless-login' ),
-						'isAdvanced'        => false,
-						'order'             => 1,
-						'required'          => true,
-						'sanitize_callback' => 'sanitize_text_field',
-					],
-					'order'         => [
-						'description'       => __( 'The order in which the provider should disappear.', 'wp-graphql-headless-login' ),
-						'label'             => __( 'Order', 'wp-graphql-headless-login' ),
-						'type'              => 'integer',
-						'default'           => 0,
-						'help'              => __( 'This is the order in which the provider will be displayed to the user.', 'wp-graphql-headless-login' ),
-						'hidden'            => true,
-						'isAdvanced'        => false,
-						'required'          => true,
-						'sanitize_callback' => 'absint',
-					],
-					'slug'          => [
-						'description'       => __( 'The provider slug.', 'wp-graphql-headless-login' ),
-						'label'             => __( 'Provider Slug', 'wp-graphql-headless-login' ),
-						'type'              => 'string',
-						'default'           => $slug,
-						'enum'              => array_keys( $providers ),
-						'help'              => __( 'This is the slug that will be used to identify the provider.', 'wp-graphql-headless-login' ),
-						'isAdvanced'        => false,
-						'hidden'            => true,
-						'required'          => true,
-						'sanitize_callback' => 'sanitize_text_field',
-					],
-					'isEnabled'     => [
-						'description'       => __( 'Whether the provider is enabled or not.', 'wp-graphql-headless-login' ),
-						'label'             => __( 'Enable Provider', 'wp-graphql-headless-login' ),
-						'type'              => 'boolean',
-						'required'          => true,
-						'hidden'            => false,
-						'order'             => 0,
-						'default'           => false,
-						'sanitize_callback' => 'rest_sanitize_boolean',
-					],
-					'clientOptions' => [
-						'description'       => __( 'The client options for the provider.', 'wp-graphql-headless-login' ),
-						'label'             => __( 'Client Options', 'wp-graphql-headless-login' ),
-						'type'              => 'object',
-						'properties'        => $provider::get_client_options_schema(),
-						'sanitize_callback' => static function ( $value ) use ( $provider ) {
-							$schema = $provider::get_client_options_schema();
-
-							$sanitized_values = [];
-
-							foreach ( $schema as $key => $setting ) {
-								if ( ! isset( $value[ $key ] ) ) {
-									continue;
-								}
-
-								// Sanitize the value if a callback is provided.
-								$sanitized_values[ $key ] = isset( $setting['sanitize_callback'] ) && is_callable( $setting['sanitize_callback'] ) ? $setting['sanitize_callback']( $value[ $key ] ) : $value[ $key ];
-							}
-
-							return $sanitized_values;
-						},
-					],
-					'loginOptions'  => [
-						'description'       => __( 'The login options for the provider.', 'wp-graphql-headless-login' ),
-						'label'             => __( 'Login Options', 'wp-graphql-headless-login' ),
-						'type'              => 'object',
-						'properties'        => $provider::get_login_options_schema(),
-						'sanitize_callback' => static function ( $value ) use ( $provider ) {
-							$schema = $provider::get_login_options_schema();
-
-							$sanitized_values = [];
-
-							foreach ( $schema as $key => $setting ) {
-								if ( ! isset( $value[ $key ] ) ) {
-									continue;
-								}
-
-								// Sanitize the value if a callback is provided.
-								$sanitized_values[ $key ] = isset( $setting['sanitize_callback'] ) && is_callable( $setting['sanitize_callback'] ) ? $setting['sanitize_callback']( $value[ $key ] ) : $value[ $key ];
-							}
-
-							return $sanitized_values;
-						},
-					],
-				];
-			}
-
-			self::$config = $config;
-		}
-
-		return self::$config;
+	public static function get_slug(): string {
+		return 'providers';
 	}
 
 	/**
-	 * Returns the args used to register the settings.
-	 *
-	 * @return array<string,mixed>
+	 * The screen title.
 	 */
-	public static function get_settings_args(): array {
-		if ( empty( self::$args ) ) {
-			$config = self::get_config();
+	public function get_title(): string {
+		return __( 'Login Providers', 'wp-graphql-headless-login' );
+	}
 
-			$providers = ProviderRegistry::get_instance()->get_registered_providers();
+	/**
+	 * The label used in the menu
+	 */
+	public function get_label(): string {
+		return __( 'Providers', 'wp-graphql-headless-login' );
+	}
 
-			$args = [];
+	/**
+	 * The screen description.
+	 */
+	public function get_description(): string {
+		return __( 'Create and manage the provider configurations available to authenticate users.', 'wp-graphql-headless-login' );
+	}
 
-			$excluded_keys = [
-				'advanced',
-				'default',
-				'help',
-				'label',
-				'order',
-				'required',
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @return array<string,RenderFieldSetting>
+	 */
+	public function get_config(): array {
+		return [
+			'name'      => [
+				'description' => __( 'The provider name.', 'wp-graphql-headless-login' ),
+				'label'       => __( 'Name', 'wp-graphql-headless-login' ),
+				'type'        => 'string',
+				'help'        => __( 'This is the label that will be displayed to the user.', 'wp-graphql-headless-login' ),
+				'isAdvanced'  => false,
+				'order'       => 0,
+				'required'    => true,
+			],
+			'type'      => [
+				'description' => __( 'The provider type.', 'wp-graphql-headless-login' ),
+				'label'       => __( 'Provider Type', 'wp-graphql-headless-login' ),
+				'help'        => __( 'The provider or service ', 'wp-graphql-headless-login' ),
+				'type'        => 'string',
+				'controlType' => 'select',
+				'isAdvanced'  => false,
+				'order'       => 1,
+				'required'    => true,
+				'hidden'      => false,
+				'enum'        => array_map(
+					static fn ( $class_name ) => $class_name::get_name(),
+					ProviderRegistry::get_instance()->get_provider_types(),
+				) ?: [ 'Github' ],
+			],
+			'slug'      => [
+				'description' => __( 'The provider slug.', 'wp-graphql-headless-login' ),
+				'label'       => __( 'Provider Slug', 'wp-graphql-headless-login' ),
+				'type'        => 'string',
+				'help'        => __( 'This is the slug that will be used to identify the provider.', 'wp-graphql-headless-login' ),
+				'isAdvanced'  => false,
+				'hidden'      => true,
+				'required'    => true,
+			],
+			'isEnabled' => [
+				'description' => __( 'Whether the provider is enabled or not.', 'wp-graphql-headless-login' ),
+				'label'       => __( 'Enable Provider', 'wp-graphql-headless-login' ),
+				'type'        => 'boolean',
+				'required'    => true,
+				'hidden'      => false,
+				'order'       => 2,
+				'default'     => true,
+			],
+			'order'     => [
+				'description' => __( 'The order in which the provider should disappear.', 'wp-graphql-headless-login' ),
+				'label'       => __( 'Order', 'wp-graphql-headless-login' ),
+				'type'        => 'integer',
+				'default'     => 0,
+				'help'        => __( 'This is the order in which the provider will be displayed to the user.', 'wp-graphql-headless-login' ),
+				'hidden'      => false,
+				'isAdvanced'  => false,
+				'required'    => true,
+			],
+		];
+	}
+
+	/**
+	 * @return array{
+	 *  title: string,
+	 *  label: string,
+	 *  description: string,
+	 *  fields: array<string,RenderFieldSetting>
+	 * }
+	 */
+	public function get_render_config(): array {
+		return [
+			'title'              => $this->get_title(),
+			'label'              => $this->get_label(),
+			'description'        => $this->get_description(),
+			'fields'             => $this->get_config(),
+			'providerTypeFields' => $this->get_provider_types_config(),
+		];
+	}
+
+	/**
+	 * @return array<string,array<string,RenderFieldSetting>>
+	 */
+	protected function get_provider_types_config() {
+		$provider_types = ProviderRegistry::get_instance()->get_provider_types();
+
+		$config = [];
+
+		foreach ( $provider_types as $type ) {
+			$config[ $type::get_slug() ] = [
+				'clientOptions' => [
+					'description' => __( 'The client options for the provider.', 'wp-graphql-headless-login' ),
+					'label'       => __( 'Client Options', 'wp-graphql-headless-login' ),
+					'type'        => 'object',
+					'properties'  => $type::get_client_options_schema(),
+				],
+				'loginOptions'  => [
+					'description' => __( 'The login options for the provider.', 'wp-graphql-headless-login' ),
+					'label'       => __( 'Login Options', 'wp-graphql-headless-login' ),
+					'type'        => 'object',
+					'properties'  => $type::get_login_options_schema(),
+				],
 			];
-
-			foreach ( $providers as $slug => $provider ) {
-				$defaults = [];
-
-				foreach ( $config[ self::$settings_prefix . $slug ] as $setting_key => $setting_args ) {
-					$defaults[ $setting_key ] = $setting_args['default'] ?? null;
-
-					// Remove excluded keys from args.
-					$config[ self::$settings_prefix . $slug ][ $setting_key ] = array_diff_key( $setting_args, array_flip( $excluded_keys ) );
-				}
-
-				$args[ self::$settings_prefix . $slug ] = [
-					'single'          => false,
-					'type'            => 'object',
-					'default'         => $defaults,
-					'show_in_graphql' => false,
-					'show_in_rest'    => [
-						'schema' => [
-							'title'      => $provider::get_name(),
-							'type'       => 'object',
-							'properties' => $config[ self::$settings_prefix . $slug ],
-						],
-					],
-				];
-			}
-
-			self::$args = $args;
 		}
 
-		return self::$args;
+		return $config;
 	}
 }

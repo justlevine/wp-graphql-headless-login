@@ -10,6 +10,7 @@ declare( strict_types = 1 );
 
 namespace WPGraphQL\Login\Auth;
 
+use WPGraphQL\Login\Providers\ProviderRegistry;
 use WP_User_Query;
 
 /**
@@ -103,9 +104,9 @@ class User {
 	 * @return \WP_User|\WP_Error|false
 	 */
 	public static function maybe_create_user( Client $client, array $user_data ) {
-		$config = $client->get_config();
+		$provider = $client->get_provider();
 
-		if ( ! empty( $config['loginOptions']['linkExistingUsers'] ) ) {
+		if ( ! empty( $provider->login_options['linkExistingUsers'] ) ) {
 			$user_id = email_exists( $user_data['user_email'] );
 
 			if ( ! empty( $user_id ) ) {
@@ -113,7 +114,7 @@ class User {
 			}
 		}
 
-		if ( empty( $config['loginOptions']['createUserIfNoneExists'] ) ) {
+		if ( empty( $provider->login_options['createUserIfNoneExists'] ) ) {
 			return false;
 		}
 

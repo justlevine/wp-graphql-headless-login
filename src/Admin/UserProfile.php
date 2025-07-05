@@ -11,9 +11,9 @@ declare( strict_types = 1 );
 namespace WPGraphQL\Login\Admin;
 
 use WPGraphQL\Login\Auth\ProviderConfig\Password;
-use WPGraphQL\Login\Auth\ProviderRegistry;
 use WPGraphQL\Login\Auth\TokenManager;
 use WPGraphQL\Login\Auth\User;
+use WPGraphQL\Login\Providers\ProviderRegistry;
 
 /**
  * Class - UserProfile
@@ -82,13 +82,13 @@ class UserProfile {
 		<table class="form-table">
 			<tbody>
 				<?php
-				foreach ( array_keys( $providers ) as $provider ) {
+				foreach ( $providers as $provider ) {
 					// Exclude the password provider.
-					if ( Password::get_slug() === $provider ) {
+					if ( Password::get_slug() === $provider->type ) {
 						continue;
 					}
 
-					self::provider_identity_field( $user->ID, $provider, $providers[ $provider ]::get_name(), $identities[ $provider ] ?? '' );
+					self::provider_identity_field( $user->ID, $provider->slug, $provider->name, $identities[ $provider->slug ] ?? '' );
 				}
 				?>
 			</tbody>

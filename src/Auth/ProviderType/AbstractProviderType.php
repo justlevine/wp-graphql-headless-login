@@ -2,13 +2,13 @@
 /**
  * Abstract base class for provider types.
  *
- * @package WPGraphQL\Login\Providers
+ * @package WPGraphQL\Login\Auth\ProviderType
  * @since 0.0.1
  */
 
 declare( strict_types = 1 );
 
-namespace WPGraphQL\Login\Providers;
+namespace WPGraphQL\Login\Auth\ProviderType;
 
 /**
  * Class ProviderType
@@ -26,73 +26,7 @@ namespace WPGraphQL\Login\Providers;
  *   validate_callback?: callable(mixed): (\WP_Error|true),
  * }
  */
-abstract class ProviderType {
-	/**
-	 * Registry of provider types.
-	 *
-	 * @var array<string,class-string<self>>
-	 */
-	protected static array $registry = [];
-
-	/**
-	 * Register a provider type.
-	 *
-	 * @param class-string<self> $provider_class The provider class to register.
-	 *
-	 * @return bool True if registered successfully, false if not.
-	 */
-	public static function register_type( string $provider_class ): bool {
-		if ( ! is_subclass_of( $provider_class, self::class ) ) {
-			return false;
-		}
-
-		/** @var class-string<self> $provider_class */
-		$type = $provider_class::get_type();
-		if ( empty( $type ) ) {
-			return false;
-		}
-
-		self::$registry[ $type ] = $provider_class;
-
-		/**
-		 * Fires after a provider type is registered.
-		 *
-		 * @param class-string<\WPGraphQL\Login\Providers\ProviderType> $provider_class The provider class.
-		 */
-		do_action( 'graphql_login_provider_type_registered', $provider_class );
-
-		return true;
-	}
-
-	/**
-	 * Get a registered provider type.
-	 *
-	 * @param string $type The provider type.
-	 *
-	 * @return ?class-string<self> The provider class or null if not registered.
-	 */
-	public static function get_registered_type( string $type ): ?string {
-		return self::$registry[ $type ] ?? null;
-	}
-
-	/**
-	 * Get all registered provider types.
-	 *
-	 * @return array<string,class-string<self>>
-	 */
-	public static function get_registered_types(): array {
-		return self::$registry;
-	}
-
-	/**
-	 * Check if a provider type is registered.
-	 *
-	 * @param string $type The provider type.
-	 */
-	public static function has_registered_type( string $type ): bool {
-		return isset( self::$registry[ $type ] );
-	}
-
+abstract class AbstractProviderType {
 	/**
 	 * Get the provider type.
 	 *
@@ -135,6 +69,15 @@ abstract class ProviderType {
 	 * @return array<string,mixed>|\WP_Error The user data or WP_Error on failure.
 	 */
 	abstract public function authenticate( array $input );
+
+	/**
+	 * Gets the user from the data returned by the provider.
+	 *
+	 * @param array<string,mixed> $data The data returned by the provider.
+	 *
+	 * @return ?\WP_User
+	 */
+	abstract public function get_user_from_data( array $data );
 
 	/**
 	 * Map provider user data to WordPress user data.

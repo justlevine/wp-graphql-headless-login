@@ -12,8 +12,10 @@ namespace WPGraphQL\Login\Database;
 
 /**
  * Class - Model
+ *
+ * @phpstan-implements \ArrayAccess<string, mixed>
  */
-abstract class Model {
+abstract class Model implements \ArrayAccess {
 	/**
 	 * The schema.
 	 *
@@ -168,6 +170,40 @@ abstract class Model {
 	 */
 	public function __isset( string $field ): bool {
 		return isset( $this->data[ $field ] );
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function offsetExists( $offset ): bool {
+		return $this->__isset( (string) $offset );
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	#[\ReturnTypeWillChange]
+	public function offsetGet( $offset ) {
+		return $this->__get( (string) $offset );
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function offsetSet( $offset, $value ): void {
+		$this->__set( (string) $offset, $value );
+	}
+
+	/**
+	 * ArrayAccess: Unset an offset.
+	 *
+	 * @param mixed $offset The offset to unset.
+	 * @throws \BadMethodCallException Always throws as unsetting fields is not supported.
+	 */
+	public function offsetUnset( $offset ): void {
+		throw new \BadMethodCallException(
+			esc_html__( 'Unsetting model fields is not supported. Set the field to null instead.', 'wp-graphql-headless-login' )
+		);
 	}
 
 	/**

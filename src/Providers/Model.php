@@ -10,6 +10,7 @@ declare( strict_types = 1 );
 
 namespace WPGraphQL\Login\Providers;
 
+use WPGraphQL\Login\Auth\ProviderType\AbstractProviderType;
 use WPGraphQL\Login\Database\Model as BaseModel;
 
 /**
@@ -30,9 +31,9 @@ class Model extends BaseModel {
 	/**
 	 * The provider type instance.
 	 *
-	 * @var \WPGraphQL\Login\Providers\ProviderType
+	 * @var \WPGraphQL\Login\Auth\ProviderType\AbstractProviderType
 	 */
-	protected ProviderType $provider_type;
+	protected AbstractProviderType $provider_type;
 
 	/**
 	 * {@inheritDoc}
@@ -51,7 +52,7 @@ class Model extends BaseModel {
 			);
 		}
 
-		$provider_type = ProviderType::get_registered_type( $this->type );
+		$provider_type = ProviderRegistry::get_instance()->get_provider_type( $this->type );
 
 		if ( null === $provider_type ) {
 			throw new \InvalidArgumentException(
@@ -63,7 +64,7 @@ class Model extends BaseModel {
 			);
 		}
 
-		$this->provider_type = new $provider_type();
+		$this->provider_type = $provider_type;
 	}
 
 	/**
@@ -98,6 +99,13 @@ class Model extends BaseModel {
 				$this->set_login_option( $key, $option_value );
 			}
 		}
+	}
+
+	/**
+	 * Gets the provider type instance
+	 */
+	public function get_provider_type(): AbstractProviderType {
+		return $this->provider_type;
 	}
 
 	/**

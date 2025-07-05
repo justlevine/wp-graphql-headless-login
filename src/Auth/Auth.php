@@ -13,6 +13,7 @@ namespace WPGraphQL\Login\Auth;
 use GraphQL\Error\UserError;
 use WPGraphQL\Login\Auth\Client;
 use WPGraphQL\Login\Auth\ProviderConfig\Password;
+use WPGraphQL\Login\Providers\ProviderRegistry;
 use WPGraphQL\Utils\Utils;
 use WP_Error;
 
@@ -28,6 +29,11 @@ class Auth {
 	 * @throws \GraphQL\Error\UserError If the client is invalid.
 	 */
 	public static function get_client( string $provider ): Client {
+		$provider = ProviderRegistry::get_instance()->get_provider( $provider );
+
+		if ( ! $provider ) {
+			throw new UserError( esc_html__( 'Invalid provider.', 'wp-graphql-headless-login' ) );
+		}
 		$client = new Client( $provider );
 
 		// Ensure the client is valid before returning.
@@ -79,8 +85,8 @@ class Auth {
 		wp_set_current_user( $user->ID );
 
 		// Set the auth cookie if the provider is configured to use it.
-		$config = $client->get_config();
-		if ( ! empty( $config['loginOptions']['useAuthenticationCookie'] ) ) {
+		$provider = $client->get_provider();
+		if ( ! empty( $provider->login_options['useAuthenticationCookie'] ) ) {
 			AuthCookie::set_auth_cookie( $user->ID, false );
 		}
 

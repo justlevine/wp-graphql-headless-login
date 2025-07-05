@@ -37,7 +37,7 @@ class Repository {
 	 * @throws \InvalidArgumentException If the model class is not a subclass of Model or the schema class is not a subclass of Schema.
 	 */
 	public function __construct( string $model_class = Model::class, string $schema_class = Schema::class ) {
-		if ( ! is_subclass_of( $model_class, Model::class ) ) {
+		if ( ! is_a( $model_class, Model::class, true ) ) {
 			throw new \InvalidArgumentException(
 				sprintf(
 					// translators: %1$s is the model class name, %2$s is the expected class name.
@@ -48,7 +48,7 @@ class Repository {
 			);
 		}
 
-		if ( ! is_subclass_of( $schema_class, Schema::class ) ) {
+		if ( ! is_a( $schema_class, Schema::class, true ) ) {
 			throw new \InvalidArgumentException(
 				sprintf(
 					// translators: %1$s is the schema class name, %2$s is the expected class name.
@@ -117,7 +117,7 @@ class Repository {
 	 */
 	public function find_by_type( string $type, bool $enabled_only = false ): array {
 		// Validate provider type exists.
-		if ( ! ProviderType::has_registered_type( $type ) ) {
+		if ( ! ProviderRegistry::get_instance()->get_provider_type( $type ) ) {
 			return [];
 		}
 
@@ -175,17 +175,6 @@ class Repository {
 		}
 
 		return array_map( static fn ( $row ) => new Model( $row ), $rows ?: [] );
-	}
-
-	/**
-	 * Save a provider instance.
-	 *
-	 * @param \WPGraphQL\Login\Providers\Model $model The provider instance to save.
-	 *
-	 * @return true|\WP_Error True on success, WP_Error on failure.
-	 */
-	public function save( Model $model ) {
-		return $model->save();
 	}
 
 	/**

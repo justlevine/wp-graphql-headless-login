@@ -26,20 +26,3 @@ if ( ! function_exists( 'graphql_login_get_setting' ) ) {
 		return Utils::get_setting( $option_name, $default_value );
 	}
 }
-
-if ( ! function_exists( 'graphql_login_get_provider_settings' ) ) {
-	/**
-	 * Gets the provider settings from the database.
-	 *
-	 * @param string $slug The provider slug.
-	 *
-	 * @uses \WPGraphQL\Login\Utils\Utils::get_provider_settings()
-	 *
-	 * @return array<string,mixed>
-	 *
-	 * @since 0.0.1
-	 */
-	function graphql_login_get_provider_settings( string $slug ): array {
-		return Utils::get_provider_settings( $slug );
-	}
-}

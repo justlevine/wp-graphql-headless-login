@@ -8,7 +8,6 @@ import { ProviderScreen } from '@/admin/components/provider-config/provider-scre
 
 import styles from './styles.module.scss';
 import { getSettingForScreen } from './utils';
-import { __ } from '@wordpress/i18n';
 
 const Wrapper = ( {
 	children,

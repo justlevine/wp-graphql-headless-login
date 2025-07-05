@@ -1,4 +1,3 @@
-import { __ } from '@wordpress/i18n';
 import { Button } from '@wordpress/components';
 import { plus } from '@wordpress/icons';
 import { useProviders } from '@/admin/hooks/useProviders';
@@ -7,10 +6,10 @@ import { PROVIDER_TYPES } from '@/admin/components/provider-config/constants/pro
 import {
 	AddProviderModal,
 	ConfigureProviderModal,
-	EmptyState,
-	ProviderList,
 } from '../provider-config copy';
 import { ScreenHeader } from '../screen/screen-header';
+import { ProviderList } from './provider-list';
+import { EmptyState } from './empty-state';
 import { Summary } from './summary';
 
 export const ProviderScreen = () => {
@@ -35,17 +34,16 @@ export const ProviderScreen = () => {
 		closeAddModal,
 	} = useProviderModal();
 
-	const title = __( 'Login Providers', 'wp-graphql-headless-login' );
-	const description = __(
-		'Configure the Authentication Providers that are available to users.',
-		'wp-graphql-headless-login'
-	);
-
 	// If no providers, show empty state
 	if ( totalCount === 0 ) {
 		return (
 			<>
-				<ScreenHeader title={ title } description={ description } />
+				<ScreenHeader
+					title={ wpGraphQLLogin?.settings?.providers?.title }
+					description={
+						wpGraphQLLogin?.settings?.providers?.description
+					}
+				/>
 				<EmptyState onAddProvider={ openAddModal } />
 				<AddProviderModal
 					isOpen={ isAddModalOpen }
@@ -75,8 +73,8 @@ export const ProviderScreen = () => {
 	return (
 		<>
 			<ScreenHeader
-				title={ title }
-				description={ description }
+				title={ wpGraphQLLogin?.settings?.providers?.title }
+				description={ wpGraphQLLogin?.settings?.providers?.description }
 				actions={ <AddProviderButton /> }
 			/>
 			{ /* Provider List */ }
@@ -89,16 +87,7 @@ export const ProviderScreen = () => {
 			/>
 
 			{ /* Summary */ }
-			<Summary
-				totalCount={ totalCount }
-				activeCount={ activeCount }
-				isActiveFilter={ false }
-				onToggleFilter={ ( filter ) => {
-					// Implement filter logic if needed
-					// For now, just log the filter state
-					console.log( 'Filter active providers:', filter );
-				} }
-			/>
+			<Summary totalCount={ totalCount } activeCount={ activeCount } />
 
 			{ /* Modals */ }
 			<AddProviderModal

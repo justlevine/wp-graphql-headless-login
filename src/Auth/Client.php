@@ -10,120 +10,49 @@ declare( strict_types = 1 );
 
 namespace WPGraphQL\Login\Auth;
 
-use WPGraphQL\Login\Auth\ProviderConfig\ProviderConfig;
-use WPGraphQL\Login\Utils\Utils;
+use WPGraphQL\Login\Providers\Model;
 
 /**
  * Class - Client
  */
 class Client {
 	/**
-	 * The client config.
+	 * The modeled Provider
 	 *
-	 * @var array<string,mixed>
+	 * @var \WPGraphQL\Login\Providers\Model
 	 */
-	private array $config;
-
-	/**
-	 * The provider name.
-	 *
-	 * @var string
-	 */
-	private string $name;
-
-	/**
-	 * The instance of the ProviderConfig class.
-	 *
-	 * @var \WPGraphQL\Login\Auth\ProviderConfig\ProviderConfig
-	 */
-	private $provider_configurator;
-
-	/**
-	 * The provider slug.
-	 *
-	 * @var string
-	 */
-	private string $slug;
-
-	/**
-	 * The provider type.
-	 *
-	 * @var string
-	 */
-	private string $type;
+	private Model $provider;
 
 	/**
 	 * The class constructor.
 	 *
-	 * @param string $slug The slug of the provider config.
+	 * @param \WPGraphQL\Login\Providers\Model $provider The modeled provider config.
 	 */
-	public function __construct( string $slug ) {
-		$this->slug                  = $slug;
-		$this->provider_configurator = ProviderRegistry::get_instance()->get_provider_config( $this->slug );
-
-		$this->name   = $this->provider_configurator::get_name();
-		$this->type   = $this->provider_configurator::get_type();
-		$this->config = Utils::get_provider_settings( $this->slug );
+	public function __construct( Model $provider ) {
+		$this->provider = $provider;
 
 		/**
 		 * Fires after the Client is instantiated.
 		 *
-		 * @param string         $slug            The slug of the provider config.
-		 * @param array          $settings        The client settings.
-		 * @param \WPGraphQL\Login\Auth\ProviderConfig\ProviderConfig $provider_config The provider configurator.
-		 * @param \WPGraphQL\Login\Auth\Client $client The Client instance.
+		 * @param string                           $slug            The slug of the provider config.
+		 * @param \WPGraphQL\Login\Providers\Model $provider        The Provider used to configure the client.
+		 * @param \WPGraphQL\Login\Auth\Client     $client          The Client instance.
 		 */
-		do_action( 'graphql_login_client_init', $this->slug, $this->config, $this->provider_configurator, $this );
+		do_action( 'graphql_login_client_init', $this->provider->slug, $this->provider, $this );
 	}
 
 	/**
 	 * Gets the provider slug.
 	 */
 	public function get_provider_slug(): string {
-		return $this->slug;
+		return $this->provider->slug;
 	}
 
 	/**
-	 * Gets the provider name.
+	 * Returns the provider config used to configure the client.
 	 */
-	public function get_provider_name(): string {
-		return $this->name;
-	}
-
-	/**
-	 * Gets the provider type.
-	 */
-	public function get_provider_type(): string {
-		return $this->type;
-	}
-
-	/**
-	 * Gets the instance of the ProviderConfig class.
-	 */
-	public function get_provider_configurator(): ProviderConfig {
-		return $this->provider_configurator;
-	}
-
-	/**
-	 * Returns the config used to configure the client.
-	 *
-	 * @return array<string,mixed>
-	 */
-	public function get_config(): array {
-		return $this->config;
-	}
-
-	/**
-	 * Gets the authorization url for the provider's server.
-	 *
-	 * @uses ProviderConfig::get_authorization_url()
-	 */
-	public function get_authorization_url(): ?string {
-		if ( method_exists( $this->provider_configurator, 'get_authorization_url' ) ) {
-			return $this->provider_configurator->get_authorization_url( $this->config );
-		}
-
-		return null;
+	public function get_provider(): Model {
+		return $this->provider;
 	}
 
 	/**
@@ -131,45 +60,42 @@ class Client {
 	 *
 	 * @param array<string,mixed> $input The mutation input data.
 	 *
-	 * @return array<string,mixed>|\WP_User|\WP_Error|false
+	 * @return array<string,mixed>|\WP_Error
 	 */
 	public function authenticate_and_get_user_data( array $input ) {
 		/**
 		 * Fires before the user is authenticated.
 		 *
-		 * @param string                                              $slug            The provider slug.
-		 * @param array                                               $input           The mutation input data.
-		 * @param array                                               $settings        The client settings.
-		 * @param \WPGraphQL\Login\Auth\ProviderConfig\ProviderConfig $provider_config The provider config.
-		 * @param \WPGraphQL\Login\Auth\Client                        $client          The Client instance.
+		 * @param string                           $slug            The provider slug.
+		 * @param array<string,mixed>              $input           The mutation input data.
+		 * @param \WPGraphQL\Login\Providers\Model $provider        The Provider used to configure the client.
+		 * @param \WPGraphQL\Login\Auth\Client     $client          The Client instance.
 		 */
-		do_action( 'graphql_login_before_authenticate', $this->slug, $input, $this->config, $this->provider_configurator, $this );
+		do_action( 'graphql_login_before_authenticate', $this->provider->slug, $input, $this->provider, $this );
 
-		$user_data = $this->provider_configurator->authenticate_and_get_user_data( $input );
+		$user_data = $this->provider->get_provider_type()->authenticate( $input );
 
 		/**
 		 * Filters the user data returned from the Authentication provider.
 		 *
-		 * @param array<string,mixed>|\WP_User|\WP_Error|false        $user_data       The user data.
-		 * @param string                                              $slug            The provider slug.
-		 * @param array                                               $input           The mutation input data.
-		 * @param array                                               $settings        The client settings.
-		 * @param \WPGraphQL\Login\Auth\ProviderConfig\ProviderConfig $provider_config The provider config.
-		 * @param \WPGraphQL\Login\Auth\Client                        $client          The Client instance.
+		 * @param array<string,mixed>|\WP_Error    $user_data       The user data.
+		 * @param string                           $slug            The provider slug.
+		 * @param array<string,mixed>              $input           The mutation input data.
+		 * @param \WPGraphQL\Login\Providers\Model $provider        The Provider used to configure the client.
+		 * @param \WPGraphQL\Login\Auth\Client     $client          The Client instance.
 		 */
-		$user_data = apply_filters( 'graphql_login_authenticated_user_data', $user_data, $this->slug, $input, $this->config, $this->provider_configurator, $this );
+		$user_data = apply_filters( 'graphql_login_authenticated_user_data', $user_data, $this->provider->slug, $input, $this->provider, $this );
 
 		/**
 		 * Fires when the user is authenticated.
 		 *
-		 * @param array<string,mixed>|\WP_User|\WP_Error|false        $user_data       The user data.
-		 * @param string                                              $slug            The provider slug.
-		 * @param array                                               $input           The mutation input data.
-		 * @param array                                               $settings        The client settings.
-		 * @param \WPGraphQL\Login\Auth\ProviderConfig\ProviderConfig $provider_config The provider config.
-		 * @param \WPGraphQL\Login\Auth\Client                        $client          The Client instance.
+		 * @param array<string,mixed>|\WP_Error    $user_data       The user data.
+		 * @param string                           $slug            The provider slug.
+		 * @param array<string,mixed>              $input           The mutation input data.
+		 * @param \WPGraphQL\Login\Providers\Model $provider        The Provider used to configure the client.
+		 * @param \WPGraphQL\Login\Auth\Client     $client          The Client instance.
 		 */
-		do_action( 'graphql_login_after_authenticate', $user_data, $this->slug, $input, $this->config, $this->provider_configurator, $this );
+		do_action( 'graphql_login_after_authenticate', $user_data, $this->provider->slug, $input, $this->provider, $this );
 
 		return $user_data;
 	}
@@ -177,40 +103,38 @@ class Client {
 	/**
 	 * Uses the authenticated user data to return the user.
 	 *
-	 * @param array<string,mixed>|\WP_User $data the user data.
+	 * @param array<string,mixed> $data the user data.
 	 *
 	 * @return \WP_User|false
 	 */
-	public function get_user_from_data( $data ) {
+	public function get_user_from_data( array $data ) {
 		/**
 		 * Shortcircuits the user matching logic, allowing you to provide your own logic for matching the user from the provider user data.
 		 * If null is returned, the default matching logic will be used.
 		 *
-		 * @param \WP_User|false|null                                 $pre_get_user    The user matched from the data. If null, the default matching logic will be used.
-		 * @param array<string,mixed>|\WP_User                        $data            The user data from the provider.
-		 * @param string                                              $slug            The provider slug.
-		 * @param array                                               $settings        The client settings.
-		 * @param \WPGraphQL\Login\Auth\ProviderConfig\ProviderConfig $provider_config The provider config.
-		 * @param \WPGraphQL\Login\Auth\Client                        $client          The Client instance.
+		 * @param \WP_User|false|null              $pre_get_user    The user matched from the data. If null, the default matching logic will be used.
+		 * @param array<string,mixed>              $data            The user data from the provider.
+		 * @param string                           $slug            The provider slug.
+		 * @param \WPGraphQL\Login\Providers\Model $provider        The Provider used to configure the client.
+		 * @param \WPGraphQL\Login\Auth\Client     $client          The Client instance.
 		 */
-		$user = apply_filters( 'graphql_login_pre_get_user_from_data', null, $data, $this->slug, $this->config, $this->provider_configurator, $this );
+		$user = apply_filters( 'graphql_login_pre_get_user_from_data', null, $data, $this->provider->slug, $this->provider, $this );
 
 		if ( null === $user ) {
-			$user = $this->provider_configurator->get_user_from_data( $data );
+			$user = $this->provider->get_provider_type()->get_user_from_data( $data ) ?: false;
 		}
 
 		/**
 		 * Fires when the user is matched from the data.
 		 * Useful for updating custom meta fields from the provider.
 		 *
-		 * @param \WP_User|false                                      $user            The user matched from the data.
-		 * @param array<string,mixed>|\WP_User                        $user_data            The user data from the provider.
-		 * @param string                                              $slug            The provider slug.
-		 * @param array                                               $settings        The client settings.
-		 * @param \WPGraphQL\Login\Auth\ProviderConfig\ProviderConfig $provider_config The provider config.
-		 * @param \WPGraphQL\Login\Auth\Client                        $client          The Client instance.
+		 * @param \WP_User|false                   $user            The user matched from the data.
+		 * @param array<string,mixed>|\WP_User     $user_data       The user data from the provider.
+		 * @param string                           $slug            The provider slug.
+		 * @param \WPGraphQL\Login\Providers\Model $provider        The Provider used to configure the client.
+		 * @param \WPGraphQL\Login\Auth\Client     $client          The Client instance.
 		 */
-		do_action( 'graphql_login_get_user_from_data', $user, $data, $this->slug, $this->config, $this->provider_configurator, $this );
+		do_action( 'graphql_login_get_user_from_data', $user, $data, $this->provider->slug, $this->provider, $this );
 
 		return $user;
 	}

@@ -12,8 +12,11 @@ const TsconfigPathsPlugin = require( 'tsconfig-paths-webpack-plugin' );
 // 	delete defaultConfig.entry[entryPoint];
 // });
 
+const isDev = process.env.NODE_ENV !== 'production';
 const mainConfig = {
 	...defaultConfig,
+	mode: isDev ? 'development' : 'production',
+	devtool: isDev ? 'eval-source-map' : 'source-map',
 	// context: path.resolve(__dirname, 'src', 'assets'),
 	module: {
 		...defaultConfig.module,

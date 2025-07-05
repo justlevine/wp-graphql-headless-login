@@ -14,7 +14,7 @@ use WPGraphQL\Login\Admin\Settings\CookieSettings;
 use WPGraphQL\Login\Admin\Settings\PluginSettings;
 use WPGraphQL\Login\Admin\Settings\ProviderSettings;
 use WPGraphQL\Login\Admin\SettingsRegistry;
-use WPGraphQL\Login\Auth\ProviderRegistry;
+use WPGraphQL\Login\Registry\ProviderRegistry;
 
 /**
  * Class - Utils
