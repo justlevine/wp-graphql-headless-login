@@ -59,13 +59,11 @@ class RootQuery extends FieldsType {
 				'resolve'     => static function ( $source, array $args ): ?array {
 					$registry = ProviderRegistry::get_instance();
 
-					// Get the args.
-					$enabled_only = ! empty( $args['enabledOnly'] );
-					$type         = ! empty( $args['type'] ) ? $args['type'] : null;
+					$type = ! empty( $args['type'] ) ? $args['type'] : null;
 
 					$providers = null !== $type
-						? $registry->get_providers_by_type( $type, $enabled_only )
-						: $registry->get_providers( $enabled_only );
+							? $registry->get_providers_by_type( $type, $args['enabledOnly'] ?? true )
+							: $registry->get_providers();
 
 					$clients = [];
 					foreach ( $providers as $provider ) {

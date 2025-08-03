@@ -2,17 +2,18 @@
 /**
  * A password provider type.
  *
- * @package WPGraphQL\Login\Auth\ProviderType
+ * @package WPGraphQL\Login\Providers\ProviderType
  * @since 0.0.1
  */
 
 declare( strict_types = 1 );
 
-namespace WPGraphQL\Login\Auth\ProviderType\OAuth2;
+namespace WPGraphQL\Login\Providers\ProviderType\OAuth2;
 
 use GraphQL\Error\UserError;
-use WPGraphQL\Login\Auth\ProviderType\AbstractProviderType;
 use WPGraphQL\Login\Auth\User;
+use WPGraphQL\Login\Providers\Model;
+use WPGraphQL\Login\Providers\ProviderType\AbstractProviderType;
 use WPGraphQL\Login\Vendor\League\OAuth2\Client\Provider\AbstractProvider;
 
 /**
@@ -36,16 +37,16 @@ abstract class AbstractOAuth2Type extends AbstractProviderType {
 	/**
 	 * The OAuth2 provider instance.
 	 *
-	 * @var \WPGraphQL\Login\Vendor\League\OAuth2\Client\Provider\AbstractProvider
+	 * @var ?\WPGraphQL\Login\Vendor\League\OAuth2\Client\Provider\AbstractProvider
 	 */
 	protected $provider;
 
 	/**
 	 * The authorization URL.
 	 *
-	 * @var string
+	 * @var ?string
 	 */
-	protected string $authorization_url;
+	protected ?string $authorization_url;
 
 	/**
 	 * {@inheritDoc}
@@ -55,12 +56,11 @@ abstract class AbstractOAuth2Type extends AbstractProviderType {
 	 * @throws \InvalidArgumentException If the provider class is not a subclass of AbstractProvider.
 	 */
 	public function __construct( string $provider_class ) {
-		$this->client_options = $this->prepare_client_options();
-
-		if ( ! is_a( $provider_class, AbstractProvider::class, true ) && ! is_a( $provider_class, 'League\OAuth2\Client\Provider\AbstractProvider', true ) ) { // Check for the prefixed and unprefixed class names.
+		// Check for the prefixed and unprefixed class names.
+		if ( ! is_a( $provider_class, AbstractProvider::class, true ) && ! is_a( $provider_class, 'League\OAuth2\Client\Provider\AbstractProvider', true ) ) {
 			throw new \InvalidArgumentException(
 				sprintf(
-					// translators: %1$s is the expected class, %2$s is the provided class.
+					/* translators: %1$s is the expected class, %2$s is the provided class. */
 					esc_html__( 'The provider class must extend %1$s. %2$s does not', 'wp-graphql-headless-login' ),
 					esc_html( AbstractProvider::class ),
 					esc_html( $provider_class )
@@ -68,10 +68,7 @@ abstract class AbstractOAuth2Type extends AbstractProviderType {
 			);
 		}
 
-		/** @var class-string<\WPGraphQL\Login\Vendor\League\OAuth2\Client\Provider\AbstractProvider> $provider_class */
-		$this->provider = new $provider_class( $this->client_options );
-
-		$this->authorization_url = $this->prepare_authorization_url( $this->client_options );
+		$this->provider_class = $provider_class;
 
 		parent::__construct();
 	}
@@ -96,16 +93,31 @@ abstract class AbstractOAuth2Type extends AbstractProviderType {
 	/**
 	 * Gets the instance of the OAuth2 Provider.
 	 *
-	 * @return \WPGraphQL\Login\Vendor\League\OAuth2\Client\Provider\AbstractProvider
+	 * @param \WPGraphQL\Login\Providers\Model $config The provider model.
+	 *
+	 * @throws \InvalidArgumentException If the provider has not been instantiated and no config model is provided.
 	 */
-	public function get_provider() {
+	protected function get_provider( ?Model $config = null ): AbstractProvider {
+		if ( ! $this->provider ) {
+			if ( null === $config ) {
+				throw new \InvalidArgumentException(
+					esc_html__( 'The provider has yet to be instantiated.', 'wp-graphql-headless-login' )
+				);
+			}
+
+			$provider_class = $this->provider_class;
+			$options        = $this->prepare_client_options( $config );
+
+			$this->provider = new $provider_class( $options );
+		}
+
 		return $this->provider;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
-	public function authenticate( array $input ) {
+	public function authenticate( array $input, Model $provider ) {
 		// Start the session.
 		if ( ! session_id() && ! headers_sent() ) { // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.session_session_id
 			session_start(); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.session_session_start
@@ -156,15 +168,16 @@ abstract class AbstractOAuth2Type extends AbstractProviderType {
 	 * @return array<string,mixed> The resource owner data.
 	 */
 	protected function get_resource_owner( array $args ): array {
+		$provider = $this->get_provider();
 		/**
 		 * Get the access token.
 		 *
 		 * @var \WPGraphQL\Login\Vendor\League\OAuth2\Client\Token\AccessToken $token
 		 */
-		$token = $this->provider->getAccessToken( 'authorization_code', $args );
+		$token = $provider->getAccessToken( 'authorization_code', $args );
 
 		// Get the resource owner.
-		$resource_owner = $this->provider->getResourceOwner( $token );
+		$resource_owner = $provider->getResourceOwner( $token );
 
 		return $resource_owner->toArray();
 	}
@@ -172,24 +185,20 @@ abstract class AbstractOAuth2Type extends AbstractProviderType {
 	/**
 	 * Prepares the client options.
 	 *
+	 * @param \WPGraphQL\Login\Providers\Model $config The provider model.
+	 *
 	 * @return array<string,mixed>
 	 */
-	protected function prepare_client_options(): array {
-		if ( ! isset( $this->client_options ) ) {
-			$provider_settings = Utils::get_provider_settings( static::get_slug() );
+	protected function prepare_client_options( $config ): array {
 
-			$client_options = $this->get_options( $provider_settings['clientOptions'] ?? [] );
-
-			/**
-			 * Filters the options used to configure the Authentication provider.
-			 *
-			 * @param array  $options The provider options stored in the database.
-			 * @param string $slug The provider slug.
-			 */
-			$this->client_options = apply_filters( 'graphql_login_client_options', $client_options, static::get_slug() );
-		}
-
-		return $this->client_options;
+		$client_options = $this->get_options( $config->client_options ?? [] );
+		/**
+		 * Filters the options used to configure the Authentication provider.
+		 *
+		 * @param array  $options The provider options stored in the database.
+		 * @param string $slug The provider slug.
+		 */
+		return apply_filters( 'graphql_login_client_options', $client_options, static::get_slug() );
 	}
 
 	/**
@@ -222,11 +231,12 @@ abstract class AbstractOAuth2Type extends AbstractProviderType {
 	}
 
 	/**
-	 * Prepares the authorization url from the provider.
+	 * Get the authorization URL for the provider.
 	 *
-	 * @param array<string,mixed> $options The options used to configure the provider.
+	 * @param \WPGraphQL\Login\Providers\Model $config The provider model.
 	 */
-	protected function prepare_authorization_url( array $options = [] ): string {
+	public function get_authorization_url( Model $config ): string {
+		$options = $config->client_options ?? [];
 
 		// Manually scope the options to avoid leaking sensitive data.
 		$scoped_options = [];
@@ -240,7 +250,7 @@ abstract class AbstractOAuth2Type extends AbstractProviderType {
 			$scoped_options['redirect_uri'] = $options['redirectUri'];
 		}
 
-		return $this->provider->getAuthorizationUrl( $scoped_options );
+		return $this->get_provider()->getAuthorizationUrl( $scoped_options );
 	}
 
 	/**

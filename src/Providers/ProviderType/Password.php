@@ -1,27 +1,61 @@
 <?php
 /**
- * The Password provider class.
+ * A password provider type.
  *
- * @package WPGraphQL\Login\Auth\ProviderConfig
- * @since 0.0.6
+ * @package WPGraphQL\Login\Providers\ProviderType
+ * @since 0.0.1
  */
 
 declare( strict_types = 1 );
 
-namespace WPGraphQL\Login\Auth\ProviderConfig;
+namespace WPGraphQL\Login\Providers\ProviderType;
 
 use GraphQL\Error\UserError;
+use WPGraphQL\Login\Providers\Model;
 
 /**
  * Class - Password
  */
-class Password extends ProviderConfig {
+class Password extends AbstractProviderType {
 	/**
 	 * {@inheritDoc}
-	 *
-	 * @return \WP_User|\WP_Error|false
 	 */
-	public function authenticate_and_get_user_data( array $input ) {
+	public static function get_type(): string {
+		return 'password';
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public static function get_name(): string {
+		return __( 'Password', 'wp-graphql-headless-login' );
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public static function get_slug(): string {
+		return 'password';
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public static function get_client_options_schema(): array {
+		return [];
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public static function get_login_options_schema(): array {
+		return [];
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function authenticate( array $input, Model $provider ) {
 		// Get the args from the input.
 		$args = $this->prepare_mutation_input( $input );
 
@@ -38,21 +72,22 @@ class Password extends ProviderConfig {
 		if ( $user instanceof \WP_Error ) {
 			graphql_debug( wp_strip_all_tags( $user->get_error_message() ) );
 
-			return false;
+			return new \WP_Error(
+				'graphql-headless-authentication-failed',
+				__( 'Failed to authenticate.', 'wp-graphql-headless-login' )
+			);
 		}
 
-		return $user;
+		return $user->to_array();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
-	public function get_user_from_data( $user ) {
-		if ( $user instanceof \WP_Error || $user instanceof \WP_User ) {
-			return $user;
-		}
+	public function get_user_from_data( array $data ) {
+		$user = ! empty( $data['ID'] ) ? get_user_by( 'id', (int) $data['ID'] ) : false;
 
-		return false;
+		return $user instanceof \WP_User ? $user : null;
 	}
 
 	/**

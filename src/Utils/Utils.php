@@ -12,9 +12,8 @@ namespace WPGraphQL\Login\Utils;
 use WPGraphQL\Login\Admin\Settings\AccessControlSettings;
 use WPGraphQL\Login\Admin\Settings\CookieSettings;
 use WPGraphQL\Login\Admin\Settings\PluginSettings;
-use WPGraphQL\Login\Admin\Settings\ProviderSettings;
 use WPGraphQL\Login\Admin\SettingsRegistry;
-use WPGraphQL\Login\Registry\ProviderRegistry;
+use WPGraphQL\Login\Providers\ProviderRegistry;
 
 /**
  * Class - Utils
@@ -167,20 +166,21 @@ class Utils {
 	}
 
 	/**
-	 * Gets the provider settings.
+	 * Gets the provider settings from the provider model (database).
 	 *
 	 * @param string $slug The provider slug.
 	 *
-	 * @return array<string,mixed>
+	 * @return ?array<string,mixed>
 	 */
 	public static function get_provider_settings( string $slug ) {
-		if ( ! isset( self::$providers[ $slug ] ) ) {
-			$settings = get_option( ProviderSettings::$settings_prefix . $slug, [] );
+		if ( ! array_key_exists( $slug, self::$providers ) ) {
+			$provider = ProviderRegistry::get_instance()->get_provider( $slug );
 
+			$settings = isset( $provider ) ? $provider->to_array() : [];
 			/**
 			 * Filter the provider settings before returning it
 			 *
-			 * @param array  $settings       The provider settings.
+			 * @param array $settings       The provider settings.
 			 * @param string $slug           The provider slug.
 			 */
 			self::$providers[ $slug ] = apply_filters( 'graphql_login_provider_settings', $settings, $slug );
@@ -190,14 +190,14 @@ class Utils {
 	}
 
 	/**
-	 * Gets all provider settings from the database.
+	 * Gets all provider settings from the provider models (database).
 	 *
 	 * @return array<string,array<string,mixed>>
 	 */
 	public static function get_all_provider_settings(): array {
-		$providers = ProviderRegistry::get_instance()->get_registered_providers();
+		$provider_types = ProviderRegistry::get_instance()->get_provider_types();
 
-		foreach ( array_keys( $providers ) as $slug ) {
+		foreach ( array_keys( $provider_types ) as $slug ) {
 			if ( ! isset( self::$providers[ $slug ] ) ) {
 				self::get_provider_settings( $slug );
 			}

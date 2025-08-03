@@ -9,7 +9,6 @@ declare( strict_types = 1 );
 
 namespace WPGraphQL\Login\Type\WPInterface;
 
-use WPGraphQL\Login\Auth\ProviderConfig\ProviderConfig;
 use WPGraphQL\Login\Vendor\AxeWP\GraphQL\Abstracts\InterfaceType;
 use WPGraphQL\Login\Vendor\AxeWP\GraphQL\Traits\TypeResolverTrait;
 
@@ -37,7 +36,15 @@ class LoginOptions extends InterfaceType {
 	 * {@inheritDoc}
 	 */
 	public static function get_fields(): array {
-		return ProviderConfig::default_login_options_fields();
+		// Aggregate login options fields from all provider types.
+		$fields         = [];
+		$provider_types = \WPGraphQL\Login\Providers\ProviderRegistry::get_instance()->get_provider_types();
+		foreach ( $provider_types as $provider_type ) {
+			if ( method_exists( $provider_type, 'get_login_options_fields' ) ) {
+				$fields = array_merge( $fields, $provider_type::get_login_options_fields() );
+			}
+		}
+		return $fields;
 	}
 
 	/**

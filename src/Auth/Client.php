@@ -73,7 +73,7 @@ class Client {
 		 */
 		do_action( 'graphql_login_before_authenticate', $this->provider->slug, $input, $this->provider, $this );
 
-		$user_data = $this->provider->get_provider_type()->authenticate( $input );
+		$user_data = $this->provider->authenticate( $input );
 
 		/**
 		 * Filters the user data returned from the Authentication provider.

@@ -9,7 +9,7 @@ declare( strict_types = 1 );
 
 namespace WPGraphQL\Login\Type\ObjectType;
 
-use WPGraphQL\Login\Type\Interface\ProviderInterface;
+use WPGraphQL\Login\Type\WPInterface\Provider as ProviderInterface;
 use WPGraphQL\Login\Vendor\AxeWP\GraphQL\Abstracts\ObjectType;
 
 /**
@@ -37,7 +37,7 @@ class OAuth2Provider extends ObjectType {
 		return [
 			'authorizationUrl' => [
 				'type'        => 'String',
-				'description' => __( 'The URL to redirect to for authorization.', 'wp-graphql-headless-login' ),
+				'description' => static fn () => __( 'The URL to redirect to for authorization.', 'wp-graphql-headless-login' ),
 				'resolve'     => static function ( $provider ) {
 					return $provider->get_authorization_url();
 				},
@@ -47,6 +47,9 @@ class OAuth2Provider extends ObjectType {
 
 	/**
 	 * {@inheritDoc}
+	 */
+	/**
+	 * @return array<int, string>
 	 */
 	public static function get_interfaces(): array {
 		return [

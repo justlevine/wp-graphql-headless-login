@@ -38,10 +38,10 @@ class ProviderTypeEnum extends EnumType {
 
 		$types = ProviderRegistry::get_instance()->get_provider_types();
 
-		foreach ( $types as $type => $provider_class ) {
+		foreach ( $types as $type => $provider_type_class ) {
 			$values[ strtoupper( $type ) ] = [
 				'value'       => $type,
-				'description' => sprintf(
+				'description' => static fn () => sprintf(
 					// translators: %s is the provider type name.
 					__( 'The %s provider type.', 'wp-graphql-headless-login' ),
 					$type

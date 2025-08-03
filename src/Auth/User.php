@@ -151,10 +151,10 @@ class User {
 		$providers = ProviderRegistry::get_instance()->get_providers();
 
 		$identities = [];
-		foreach ( array_keys( $providers ) as $provider ) {
-			$identity = get_user_meta( $user_id, self::get_identity_meta_key( $provider ), true );
+		foreach ( $providers as $provider ) {
+			$identity = get_user_meta( $user_id, self::get_identity_meta_key( $provider->slug ), true );
 			if ( ! empty( $identity ) ) {
-				$identities[ $provider ] = $identity;
+				$identities[ $provider->slug ] = $identity;
 			}
 		}
 

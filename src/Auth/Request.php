@@ -12,7 +12,7 @@ namespace WPGraphQL\Login\Auth;
 
 use GraphQL\Error\UserError;
 use WPGraphQL;
-use WPGraphQL\Login\Auth\ProviderConfig\SiteToken;
+use WPGraphQL\Login\Providers\ProviderType\SiteToken;
 use WPGraphQL\Login\Utils\Utils;
 
 /**
@@ -274,7 +274,8 @@ class Request {
 		}
 
 		// If the SiteLogin provider is active, then set add the provider's header key.
-		if ( SiteToken::is_enabled() ) {
+		$provider_types = \WPGraphQL\Login\Providers\ProviderRegistry::get_instance()->get_provider_types();
+		if ( isset( $provider_types[ SiteToken::get_slug() ] ) ) {
 			$options = Utils::get_provider_settings( SiteToken::get_slug() );
 
 			$token_header = $options['clientOptions']['headerKey'] ?? null;

@@ -2,47 +2,46 @@
 /**
  * Instagram OAuth2 Provider Type
  *
- * @package WPGraphQL\Login\Auth\ProviderType\OAuth2
+ * @package WPGraphQL\Login\Providers\ProviderType\OAuth2
  * @since 0.0.1
  */
 
-
-
-namespace WPGraphQL\Login\Auth\ProviderType\OAuth2;
+namespace WPGraphQL\Login\Providers\ProviderType\OAuth2;
 
 /**
- * Instagram OAuth2 Provider Type
- *
- * @package WPGraphQL\Login\Auth\ProviderType\OAuth2
- * @since 0.0.1
+ * Class - Instagram
  */
 class Instagram extends AbstractOAuth2Type {
 	/**
-	 * Get the provider type.
+	 * Instagram constructor.
+	 */
+	public function __construct() {
+		parent::__construct( \WPGraphQL\Login\Vendor\League\OAuth2\Client\Provider\Instagram::class );
+	}
+
+	/**
+	 * {@inheritDoc}
 	 */
 	public static function get_type(): string {
 		return 'oauth2';
 	}
 
 	/**
-	 * Get the provider name.
+	 * {@inheritDoc}
 	 */
 	public static function get_name(): string {
 		return __( 'Instagram', 'wp-graphql-headless-login' );
 	}
 
 	/**
-	 * Get the provider slug.
+	 * {@inheritDoc}
 	 */
 	public static function get_slug(): string {
 		return 'instagram';
 	}
 
 	/**
-	 * Get the provider options from settings.
-	 *
-	 * @param array<string,mixed> $settings Provider settings array.
-	 * @return array<string,mixed> Options for the provider.
+	 * {@inheritDoc}
 	 */
 	protected function get_options( array $settings ): array {
 		return [
@@ -54,42 +53,37 @@ class Instagram extends AbstractOAuth2Type {
 	}
 
 	/**
-	 * Get the client options schema.
-	 *
-	 * @return array<string,mixed> Client options schema.
+	 * {@inheritDoc}
 	 */
 	public static function get_client_options_schema(): array {
 		return [
 			'scope' => [
-				'type'        => 'array',
-				'description' => __( 'Scope', 'wp-graphql-headless-login' ),
+				'type'              => 'array',
+				'label'             => __( 'Scope', 'wp-graphql-headless-login' ),
+				'description'       => __( 'Scope', 'wp-graphql-headless-login' ),
 				// translators: %s is the URL to the Instagram scopes documentation.
-				'help'        => sprintf(
+				'help'              => sprintf(
 					// translators: %s is the URL to the Instagram scopes documentation.
 					__( 'The scope to request from the provider. See %s for a list of available scopes.', 'wp-graphql-headless-login' ),
 					'<a href="https://developers.facebook.com/docs/instagram-basic-display-api/overview#permissions" target="_blank" rel="noopener noreferrer">Instagram scopes documentation</a>'
 				),
-				'order'       => 12,
-				'advanced'    => true,
-				'items'       => [ 'type' => 'string' ],
+				'order'             => 12,
+				'advanced'          => true,
+				'items'             => [ 'type' => 'string' ],
+				'sanitize_callback' => 'sanitize_text_field',
 			],
 		];
 	}
 
 	/**
-	 * Get the login options schema.
-	 *
-	 * @return array<string,mixed> Login options schema.
+	 * {@inheritDoc}
 	 */
 	public static function get_login_options_schema(): array {
 		return [];
 	}
 
 	/**
-	 * Map provider user data to WordPress user data.
-	 *
-	 * @param array<string,mixed> $data Provider user data.
-	 * @return array<string,mixed> WordPress user data.
+	 * {@inheritDoc}
 	 */
 	protected function map_user_data( array $data ): array {
 		// Implement mapping logic as needed.

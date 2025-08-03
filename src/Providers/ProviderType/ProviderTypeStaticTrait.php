@@ -1,30 +1,94 @@
 <?php
 /**
- * Defines the static methods used by ProviderConfig.
+ * Defines the static methods used by AbstractProviderType.
  *
- * @package WPGraphQL\Login\Auth\ProviderConfig
+ * @package WPGraphQL\Login\Providers\ProviderType
  * @since 0.0.1
  */
 
 declare( strict_types = 1 );
 
-namespace WPGraphQL\Login\Auth\ProviderConfig;
-
-use WPGraphQL\Login\Utils\Utils;
+namespace WPGraphQL\Login\Providers\ProviderType;
 
 /**
- * Trait - ProviderConfigStaticTrait
+ * Trait - ProviderTypeStaticTrait
  *
  * @phpstan-import-type Setting from \WPGraphQL\Login\Admin\Settings\AbstractSettings
  * @phpstan-import-type FieldConfig from \AxeWP\GraphQL\Interfaces\TypeWithFields
  */
-trait ProviderConfigStaticTrait {
+trait ProviderTypeStaticTrait {
 	/**
-	 * Returns whether the provider is enabled in the settings.
+	 * Validate a single option against a schema.
+	 *
+	 * @param string                $key    The option key.
+	 * @param mixed                 $value  The option value.
+	 * @param array<string,Setting> $schema The schema to validate against.
+	 *
+	 * @return true|\WP_Error True if valid, WP_Error if invalid.
 	 */
-	public static function is_enabled(): bool {
-		$config = Utils::get_provider_settings( static::get_slug() );
-		return ! empty( $config['isEnabled'] );
+	public static function validate_option( string $key, $value, array $schema ) {
+		// Check if the key exists in the schema.
+		if ( ! isset( $schema[ $key ] ) ) {
+			// translators: %s is the field key.
+			return new \WP_Error( 'unknown_field', sprintf( __( 'Unknown field: %s', 'wp-graphql-headless-login' ), $key ) );
+		}
+
+		$setting = $schema[ $key ];
+
+		// Check if required field is missing.
+		if ( null === $value && ! empty( $setting['required'] ) ) {
+			// translators: %s is the field key.
+			return new \WP_Error( 'missing_required_field', sprintf( __( 'Missing required field: %s', 'wp-graphql-headless-login' ), $key ) );
+		}
+
+		// Skip validation if value is null and field is not required.
+		if ( null === $value ) {
+			return true;
+		}
+
+		// Validate the value if a callback is provided.
+		if ( isset( $setting['validate_callback'] ) ) {
+			$validation_result = $setting['validate_callback']( $value );
+
+			if ( true !== $validation_result ) {
+				return $validation_result instanceof \WP_Error ? $validation_result : new \WP_Error( 'invalid_field_value', $validation_result );
+			}
+		}
+
+		// Type validation.
+		return static::validate_type( $value, $setting['type'] );
+	}
+
+	/**
+	 * Sanitize a single option against a schema.
+	 *
+	 * @param string                $key    The option key.
+	 * @param mixed                 $value  The option value.
+	 * @param array<string,Setting> $schema The schema to validate against.
+	 *
+	 * @return mixed The sanitized value.
+	 * @throws \InvalidArgumentException If the option key doesn't exist in the schema.
+	 */
+	public static function sanitize_option( string $key, $value, array $schema ) {
+		// Check if the key exists in the schema.
+		if ( ! isset( $schema[ $key ] ) ) {
+			throw new \InvalidArgumentException(
+				sprintf(
+					// translators: %s is the field key.
+					esc_html__( 'Unknown field: %s', 'wp-graphql-headless-login' ),
+					esc_html( $key )
+				)
+			);
+		}
+
+		$setting = $schema[ $key ];
+
+		// Apply sanitization if a callback is provided.
+		if ( isset( $setting['sanitize_callback'] ) && is_callable( $setting['sanitize_callback'] ) ) {
+			return $setting['sanitize_callback']( $value );
+		}
+
+		return $value;
 	}
 
 	/**

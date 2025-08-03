@@ -9,7 +9,7 @@ declare( strict_types = 1 );
 
 namespace WPGraphQL\Login\Type\WPObject;
 
-use WPGraphQL\Login\Auth\ProviderRegistry;
+use WPGraphQL\Login\Providers\ProviderRegistry;
 use WPGraphQL\Login\Type\WPInterface\LoginOptions as LoginOptionsInterface;
 use WPGraphQL\Login\Vendor\AxeWP\GraphQL\Abstracts\Type;
 use WPGraphQL\Login\Vendor\AxeWP\GraphQL\Helper\Compat;
@@ -29,7 +29,7 @@ class LoginOptions extends Type {
 	 * {@inheritDoc}
 	 */
 	public static function register(): void {
-		$providers = ProviderRegistry::get_instance()->get_registered_providers();
+		$providers = ProviderRegistry::get_instance()->get_provider_types();
 
 		foreach ( $providers as $slug => $provider ) {
 			$name   = static::type_name( $slug );

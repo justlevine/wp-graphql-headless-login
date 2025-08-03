@@ -10,30 +10,55 @@ declare( strict_types = 1 );
 
 namespace WPGraphQL\Login\Providers;
 
-use WPGraphQL\Login\Auth\ProviderType\AbstractProviderType;
 use WPGraphQL\Login\Database\Model as BaseModel;
+use WPGraphQL\Login\Providers\ProviderType\AbstractProviderType;
 
 /**
  * Class - Model
  *
- * @property-read int    $id
- * @property string      $type
- * @property string      $name
- * @property string      $slug
- * @property bool        $is_enabled
- * @property int         $order
- * @property ?array<string,mixed> $client_options
- * @property ?array<string,mixed> $login_options
- * @property string      $created_at
- * @property string      $updated_at
+ * @property-read int             $id
+ * @property string               $type
+ * @property string               $name
+ * @property string               $slug
+ * @property bool                 $is_enabled
+ * @property int                  $order
+ * @property ?array<string,mixed> $settings
+ * @property string               $created_at
+ * @property string               $updated_at
  */
 class Model extends BaseModel {
 	/**
 	 * The provider type instance.
 	 *
-	 * @var \WPGraphQL\Login\Auth\ProviderType\AbstractProviderType
+	 * @var \WPGraphQL\Login\Providers\ProviderType\AbstractProviderType
 	 */
 	protected AbstractProviderType $provider_type;
+
+	/**
+	 * Provider-specific settings (serialized config)
+	 *
+	 * @var array<string,mixed>
+	 */
+	protected array $settings = [];
+
+	/**
+	 * Convert the model to an array for REST/JS use.
+	 *
+	 * @return array<string,mixed>
+	 */
+	public function to_array(): array {
+		return [
+			'id'         => $this->id,
+			'name'       => $this->name,
+			'type'       => $this->type,
+			'enabled'    => (bool) $this->is_enabled,
+			'order'      => $this->order,
+			'settings'   => $this->settings,
+			'slug'       => $this->slug,
+			'created_at' => $this->created_at,
+			'updated_at' => $this->updated_at,
+		];
+	}
 
 	/**
 	 * {@inheritDoc}
@@ -65,40 +90,33 @@ class Model extends BaseModel {
 		}
 
 		$this->provider_type = $provider_type;
+
+			// Provider-specific settings (batch sanitize/validate).
+		if ( isset( $data['settings'] ) && is_array( $data['settings'] ) ) {
+			$this->settings = $this->provider_type->sanitize_and_validate_options( $data['settings'] );
+		}
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * Validates and updates the provider settings.
 	 *
-	 * Adds provider-specific validation for client_options and login_options.
+	 * @param array<string,mixed> $settings The settings to update.
 	 *
 	 * @throws \InvalidArgumentException If the value is invalid for the provider type.
 	 */
-	public function __set( string $field, $value ): void {
-		// Other fields are handled by the parent model.
-		if ( 'client_options' !== $field && 'login_options' !== $field ) {
-			parent::__set( $field, $value );
+	public function update_settings( array $settings ): void {
+		$this->settings = $this->provider_type->sanitize_and_validate_options( $settings );
+	}
 
-			return;
-		}
-
-		if ( ! is_array( $value ) ) {
-			throw new \InvalidArgumentException(
-				sprintf(
-					// translators: %s: The field name.
-					esc_html__( 'Field %s must be an array.', 'wp-graphql-headless-login' ),
-					esc_html( $field )
-				)
-			);
-		}
-
-		foreach ( $value as $key => $option_value ) {
-			if ( 'client_options' === $field ) {
-				$this->set_client_option( $key, $option_value );
-			} else {
-				$this->set_login_option( $key, $option_value );
-			}
-		}
+	/**
+	 * Authenticates, using the provider type instance.
+	 *
+	 * @param array<string,mixed> $input The authentication input.
+	 *
+	 * @return array<string,mixed>|\WP_Error
+	 */
+	public function authenticate( array $input ) {
+		return $this->provider_type->authenticate( $input, $this );
 	}
 
 	/**
@@ -116,83 +134,6 @@ class Model extends BaseModel {
 	 *
 	 * @return mixed
 	 */
-	public function get_client_option( string $key, $fallback = null ) {
-		return $this->client_options[ $key ] ?? $fallback;
-	}
-
-	/**
-	 * Set a specific client option value.
-	 *
-	 * @param string $key The option key.
-	 * @param mixed  $value The option value.
-	 *
-	 * @throws \InvalidArgumentException If the option is invalid for the current provider type.
-	 */
-	public function set_client_option( string $key, $value ): void {
-		// Sanitize the value first.
-		$sanitized_value = $this->provider_type->sanitize_client_option( $key, $value );
-
-		// Then validate the sanitized value.
-		$valid = $this->provider_type->validate_client_option( $key, $sanitized_value );
-		if ( is_wp_error( $valid ) ) {
-			throw new \InvalidArgumentException(
-				sprintf(
-					// translators: %1$s: The option key, %2$s: The validation error message.
-					esc_html__( 'Invalid client option "%1$s": %2$s', 'wp-graphql-headless-login' ),
-					esc_html( $key ),
-					esc_html( $valid->get_error_message() )
-				)
-			);
-		}
-
-		// Update the options array with the sanitized value.
-		$options              = $this->client_options ?? [];
-		$options[ $key ]      = $sanitized_value;
-		$this->client_options = $options;
-	}
-
-	/**
-	 * Get a specific login option value.
-	 *
-	 * @param string $key The option key.
-	 * @param mixed  $fallback Default value if key doesn't exist.
-	 *
-	 * @return mixed
-	 */
-	public function get_login_option( string $key, $fallback = null ) {
-		return $this->login_options[ $key ] ?? $fallback;
-	}
-
-	/**
-	 * Set a specific login option value.
-	 *
-	 * @param string $key The option key.
-	 * @param mixed  $value The option value.
-	 *
-	 * @throws \InvalidArgumentException If the option is invalid for the current provider type.
-	 */
-	public function set_login_option( string $key, $value ): void {
-		// Sanitize the value first.
-		$sanitized_value = $this->provider_type->sanitize_login_option( $key, $value );
-
-		// Then validate the sanitized value.
-		$valid = $this->provider_type->validate_login_option( $key, $sanitized_value );
-		if ( is_wp_error( $valid ) ) {
-			throw new \InvalidArgumentException(
-				sprintf(
-					// translators: %1$s: The option key, %2$s: The validation error message.
-					esc_html__( 'Invalid login option "%1$s": %2$s', 'wp-graphql-headless-login' ),
-					esc_html( $key ),
-					esc_html( $valid->get_error_message() )
-				)
-			);
-		}
-
-		// Update the options array with the sanitized value.
-		$options             = $this->login_options ?? [];
-		$options[ $key ]     = $sanitized_value;
-		$this->login_options = $options;
-	}
 
 	/**
 	 * {@inheritDoc}
@@ -221,7 +162,7 @@ class Model extends BaseModel {
 	protected function validate() {
 		$errors = new \WP_Error();
 
-		// Required fields.
+		// Required shared fields.
 		if ( empty( $this->type ) ) {
 			$errors->add( 'required_type', __( 'Provider type is required.', 'wp-graphql-headless-login' ) );
 		}
@@ -234,20 +175,15 @@ class Model extends BaseModel {
 			$errors->add( 'required_slug', __( 'Provider slug is required.', 'wp-graphql-headless-login' ) );
 		}
 
-		if ( empty( $this->client_options ) || ! is_array( $this->client_options ) ) {
-			$errors->add( 'required_client_options', __( 'Client options are required.', 'wp-graphql-headless-login' ) );
+		// Validate provider-specific settings in batch.
+		$provider_errors = $this->provider_type->validate_options( $this->settings );
+		if ( is_wp_error( $provider_errors ) ) {
+			foreach ( $provider_errors->get_error_messages() as $msg ) {
+				$errors->add( 'invalid_settings', $msg );
+			}
 		}
 
-		if ( empty( $this->login_options ) || ! is_array( $this->login_options ) ) {
-			$errors->add( 'required_login_options', __( 'Login options are required.', 'wp-graphql-headless-login' ) );
-		}
-
-		// Validate provider type exists and validate options against schema.
-		if ( $errors->has_errors() ) {
-			return $errors;
-		}
-
-		return true;
+		return $errors->has_errors() ? $errors : true;
 	}
 
 	/**

@@ -10,7 +10,8 @@ declare( strict_types = 1 );
 
 namespace WPGraphQL\Login\Providers;
 
-use WPGraphQL\Login\Auth\ProviderType\AbstractProviderType;
+use WPGraphQL\Login\Providers\ProviderType;
+use WPGraphQL\Login\Providers\ProviderType\AbstractProviderType;
 use WPGraphQL\Login\Vendor\AxeWP\GraphQL\Interfaces\Registrable;
 
 /**
@@ -21,13 +22,19 @@ class ProviderRegistry implements Registrable {
 	 * The provider classes to register by default.
 	 */
 	private const PROVIDER_TYPE_CLASSES = [
-		// GitHubProvider::class,
+		ProviderType\OAuth2\Facebook::class,
+		ProviderType\OAuth2\Generic::class,
+		ProviderType\OAuth2\GitHub::class,
+		ProviderType\OAuth2\Google::class,
+		ProviderType\OAuth2\Instagram::class,
+		ProviderType\Password::class,
+		ProviderType\SiteToken::class,
 	];
 
 	/**
 	 * Registry of provider types.
 	 *
-	 * @var array<string,\WPGraphQL\Login\Auth\ProviderType\AbstractProviderType>
+	 * @var array<string,\WPGraphQL\Login\Providers\ProviderType\AbstractProviderType>
 	 */
 	protected static array $type_registry = [];
 
@@ -85,13 +92,13 @@ class ProviderRegistry implements Registrable {
 		}
 	}
 
-	/**
-	 * Register a provider type.
-	 *
-	 * @param class-string<\WPGraphQL\Login\Auth\ProviderType\AbstractProviderType> $provider_type_class The provider type class to register.
-	 *
-	 * @return bool True if registered successfully, false if not.
-	 */
+		/**
+		 * Register a provider type.
+		 *
+		 * @param class-string<\WPGraphQL\Login\Providers\ProviderType\AbstractProviderType> $provider_type_class The provider type class to register.
+		 *
+		 * @return bool True if registered successfully, false if not.
+		 */
 	private static function register_provider_type( string $provider_type_class ): bool {
 		if ( ! is_subclass_of( $provider_type_class, AbstractProviderType::class ) ) {
 			return false;
@@ -107,7 +114,7 @@ class ProviderRegistry implements Registrable {
 		/**
 		 * Fires after a provider type is registered.
 		 *
-		 * @param \WPGraphQL\Login\Auth\ProviderType\AbstractProviderType $provider_type The provider type instance.
+		 * @param \WPGraphQL\Login\Providers\ProviderType\AbstractProviderType $provider_type The provider type instance.
 		 */
 		do_action( 'graphql_login_provider_type_registered', self::$type_registry[ $type ] );
 
@@ -143,10 +150,7 @@ class ProviderRegistry implements Registrable {
 	 * @return \WPGraphQL\Login\Providers\Model[]
 	 */
 	public function get_providers_by_type( string $type, bool $enabled_only = false ): array {
-		return $this->repository->find_by_type(
-			$type,
-			$enabled_only
-		);
+		return $this->repository->find_by_type( $type, $enabled_only );
 	}
 
 	/**
@@ -229,7 +233,7 @@ class ProviderRegistry implements Registrable {
 	/**
 	 * Get all registered provider types keyed to their slug.
 	 *
-	 * @return array<string,\WPGraphQL\Login\Auth\ProviderType\AbstractProviderType>
+	 * @return array<string,\WPGraphQL\Login\Providers\ProviderType\AbstractProviderType>
 	 */
 	public function get_provider_types(): array {
 		return self::$type_registry;

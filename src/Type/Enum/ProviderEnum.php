@@ -10,7 +10,7 @@ declare( strict_types = 1 );
 
 namespace WPGraphQL\Login\Type\Enum;
 
-use WPGraphQL\Login\Auth\ProviderRegistry;
+use WPGraphQL\Login\Providers\ProviderRegistry;
 use WPGraphQL\Login\Vendor\AxeWP\GraphQL\Abstracts\EnumType;
 use WPGraphQL\Type\WPEnumType;
 
@@ -36,7 +36,7 @@ class ProviderEnum extends EnumType {
 	 * {@inheritDoc}
 	 */
 	public static function get_values(): array {
-		$providers = ProviderRegistry::get_instance()->get_registered_providers();
+		$providers = ProviderRegistry::get_instance()->get_provider_types();
 
 		$values = [];
 		foreach ( $providers as $provider ) {

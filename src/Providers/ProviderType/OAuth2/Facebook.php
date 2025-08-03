@@ -2,21 +2,28 @@
 /**
  * Facebook OAuth2 Provider Type
  *
- * @package WPGraphQL\Login\Auth\ProviderType\OAuth2
+ * @package WPGraphQL\Login\Providers\ProviderType\OAuth2
  * @since 0.0.1
  */
 
 declare( strict_types = 1 );
 
-namespace WPGraphQL\Login\Auth\ProviderType\OAuth2;
+namespace WPGraphQL\Login\Providers\ProviderType\OAuth2;
 
 /**
  * Facebook OAuth2 Provider Type
  *
- * @package WPGraphQL\Login\Auth\ProviderType\OAuth2
+ * @package WPGraphQL\Login\Providers\ProviderType\OAuth2
  * @since 0.0.1
  */
 class Facebook extends AbstractOAuth2Type {
+	/**
+	 * Facebook constructor.
+	 */
+	public function __construct() {
+		parent::__construct( \WPGraphQL\Login\Vendor\League\OAuth2\Client\Provider\Facebook::class );
+	}
+
 	/**
 	 * Get the provider type.
 	 */

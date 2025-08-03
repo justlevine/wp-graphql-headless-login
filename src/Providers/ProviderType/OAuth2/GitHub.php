@@ -2,21 +2,28 @@
 /**
  * GitHub OAuth2 Provider Type
  *
- * @package WPGraphQL\Login\Auth\ProviderType\OAuth2
+ * @package WPGraphQL\Login\Providers\ProviderType\OAuth2
  * @since 0.0.1
  */
 
 declare( strict_types = 1 );
 
-namespace WPGraphQL\Login\Auth\ProviderType\OAuth2;
+namespace WPGraphQL\Login\Providers\ProviderType\OAuth2;
 
 /**
  * GitHub OAuth2 Provider Type
  *
- * @package WPGraphQL\Login\Auth\ProviderType\OAuth2
+ * @package WPGraphQL\Login\Providers\ProviderType\OAuth2
  * @since 0.0.1
  */
 class GitHub extends AbstractOAuth2Type {
+	/**
+	 * GitHub constructor.
+	 */
+	public function __construct() {
+		parent::__construct( \WPGraphQL\Login\Vendor\League\OAuth2\Client\Provider\Github::class );
+	}
+
 	/**
 	 * Get the provider type.
 	 */

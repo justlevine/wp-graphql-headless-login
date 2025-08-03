@@ -2,13 +2,15 @@
 /**
  * Abstract base class for provider types.
  *
- * @package WPGraphQL\Login\Auth\ProviderType
+ * @package WPGraphQL\Login\Providers\ProviderType
  * @since 0.0.1
  */
 
 declare( strict_types = 1 );
 
-namespace WPGraphQL\Login\Auth\ProviderType;
+namespace WPGraphQL\Login\Providers\ProviderType;
+
+use WPGraphQL\Login\Providers\Model;
 
 /**
  * Class ProviderType
@@ -67,10 +69,12 @@ abstract class AbstractProviderType {
 	/**
 	 * Authenticate the user with the provider.
 	 *
-	 * @param array<string,mixed> $input The authentication input.
+	 * @param array<string,mixed>              $input The authentication input.
+	 * @param \WPGraphQL\Login\Providers\Model $provider The modeled provider data.
+	 *
 	 * @return array<string,mixed>|\WP_Error The user data or WP_Error on failure.
 	 */
-	abstract public function authenticate( array $input );
+	abstract public function authenticate( array $input, Model $provider );
 
 	/**
 	 * Gets the user from the data returned by the provider.
@@ -151,6 +155,70 @@ abstract class AbstractProviderType {
 	 */
 	public function sanitize_login_option( string $key, $value ) {
 		return static::sanitize_option( $key, $value, static::get_login_options_schema() );
+	}
+
+	/**
+	 * Batch sanitize and validate provider-specific options.
+	 *
+	 * @param array<string,mixed> $options Options to sanitize and validate.
+	 * @return array<string,mixed>
+	 * @throws \InvalidArgumentException If any option is invalid.
+	 */
+	public function sanitize_and_validate_options( array $options ): array {
+		$schemas   = array_merge(
+			static::get_client_options_schema(),
+			static::get_login_options_schema()
+		);
+		$sanitized = [];
+		foreach ( $schemas as $key => $schema ) {
+			$value = $options[ $key ] ?? ( $schema['default'] ?? null );
+			if ( isset( $schema['sanitize_callback'] ) && is_callable( $schema['sanitize_callback'] ) ) {
+				$value = call_user_func( $schema['sanitize_callback'], $value );
+			}
+			$sanitized[ $key ] = $value;
+		}
+		// Validate after sanitization.
+		$errors = $this->validate_options( $sanitized );
+		if ( is_wp_error( $errors ) ) {
+			throw new \InvalidArgumentException( implode( '; ', $errors->get_error_messages() ) );
+		}
+		return $sanitized;
+	}
+
+	/**
+	 * Batch validate provider-specific options.
+	 *
+	 * @param array<string,mixed> $options Options to validate.
+	 * @return true|\WP_Error
+	 */
+	public function validate_options( array $options ) {
+		$schemas = array_merge(
+			static::get_client_options_schema(),
+			static::get_login_options_schema()
+		);
+		$errors  = new \WP_Error();
+		foreach ( $schemas as $key => $schema ) {
+			$required = $schema['required'] ?? false;
+			$type     = $schema['type'] ?? null;
+			$value    = $options[ $key ] ?? null;
+			if ( $required && ( $value === null || $value === '' ) ) {
+				$errors->add( 'missing_option', sprintf( __( 'Missing required option: %s', 'wp-graphql-headless-login' ), $key ) );
+				continue;
+			}
+			if ( $type && $value !== null ) {
+				$type_result = static::validate_type( $value, $type );
+				if ( is_wp_error( $type_result ) ) {
+					$errors->add( 'invalid_type', sprintf( __( 'Invalid type for option %1$s: %2$s', 'wp-graphql-headless-login' ), $key, $type_result->get_error_message() ) );
+				}
+			}
+			if ( isset( $schema['validate_callback'] ) && is_callable( $schema['validate_callback'] ) ) {
+				$result = call_user_func( $schema['validate_callback'], $value );
+				if ( is_wp_error( $result ) ) {
+					$errors->add( 'invalid_option', sprintf( __( 'Invalid value for option %1$s: %2$s', 'wp-graphql-headless-login' ), $key, $result->get_error_message() ) );
+				}
+			}
+		}
+		return $errors->has_errors() ? $errors : true;
 	}
 
 	/**

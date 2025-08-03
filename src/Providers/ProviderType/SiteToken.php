@@ -2,17 +2,21 @@
 /**
  * Site Token provider type.
  *
- * @package WPGraphQL\Login\Auth\ProviderType
+ * @package WPGraphQL\Login\Providers\ProviderType
  * @since 0.0.1
  */
 
 declare( strict_types = 1 );
 
-namespace WPGraphQL\Login\Auth\ProviderType;
+namespace WPGraphQL\Login\Providers\ProviderType;
 
 use GraphQL\Error\UserError;
 use WPGraphQL\Login\Auth\User;
+use WPGraphQL\Login\Providers\Model;
 
+/**
+ * Class - SiteToken
+ */
 class SiteToken extends AbstractProviderType {
 	/**
 	 * {@inheritDoc}
@@ -41,18 +45,20 @@ class SiteToken extends AbstractProviderType {
 	public static function get_client_options_schema(): array {
 		return [
 			'headerKey' => [
-				'type'        => 'string',
-				'label'       => __( 'Header Key', 'wp-graphql-headless-login' ),
-				'description' => __( 'The custom header that will be used to store the site access token.', 'wp-graphql-headless-login' ),
-				'help'        => __( 'The custom header that will be used to store the site access token. The header should only be set on a SERVER-SIDE request. E.g. `X-My-Site-Token`', 'wp-graphql-headless-login' ),
-				'order'       => 1,
+				'type'              => 'string',
+				'label'             => __( 'Header Key', 'wp-graphql-headless-login' ),
+				'description'       => __( 'The custom header that will be used to store the site access token.', 'wp-graphql-headless-login' ),
+				'help'              => __( 'The custom header that will be used to store the site access token. The header should only be set on a SERVER-SIDE request. E.g. `X-My-Site-Token`', 'wp-graphql-headless-login' ),
+				'order'             => 1,
+				'sanitize_callback' => 'sanitize_text_field',
 			],
 			'secretKey' => [
-				'type'        => 'string',
-				'label'       => __( 'Site Secret', 'wp-graphql-headless-login' ),
-				'description' => __( 'The secret used to authenticate the site token.', 'wp-graphql-headless-login' ),
-				'help'        => __( 'The secret used to authenticate the site token. This should be the same as the value you set on your custom Header key.  The secret should only be set on a SERVER-SIDE request.', 'wp-graphql-headless-login' ),
-				'order'       => 2,
+				'type'              => 'string',
+				'label'             => __( 'Site Secret', 'wp-graphql-headless-login' ),
+				'description'       => __( 'The secret used to authenticate the site token.', 'wp-graphql-headless-login' ),
+				'help'              => __( 'The secret used to authenticate the site token. This should be the same as the value you set on your custom Header key.  The secret should only be set on a SERVER-SIDE request.', 'wp-graphql-headless-login' ),
+				'order'             => 2,
+				'sanitize_callback' => 'sanitize_text_field',
 			],
 		];
 	}
@@ -63,11 +69,13 @@ class SiteToken extends AbstractProviderType {
 	public static function get_login_options_schema(): array {
 		return [
 			'metaKey' => [
-				'type'        => 'string',
-				'description' => __( 'The User meta key to check for the identity', 'wp-graphql-headless-login' ),
-				'default'     => 'email',
-				'help'        => __( 'The WP_User key to check for the identity. Accepts `id`, `slug`, `email`, `login`, or a custom meta field.', 'wp-graphql-headless-login' ),
-				'order'       => 1,
+				'type'              => 'string',
+				'label'             => __( 'Meta Key', 'wp-graphql-headless-login' ),
+				'description'       => __( 'The User meta key to check for the identity', 'wp-graphql-headless-login' ),
+				'default'           => 'email',
+				'help'              => __( 'The WP_User key to check for the identity. Accepts `id`, `slug`, `email`, `login`, or a custom meta field.', 'wp-graphql-headless-login' ),
+				'order'             => 1,
+				'sanitize_callback' => 'sanitize_text_field',
 			],
 		];
 	}
@@ -75,11 +83,10 @@ class SiteToken extends AbstractProviderType {
 	/**
 	 * {@inheritDoc}
 	 */
-	public function authenticate( array $input ) {
+	public function authenticate( array $input, Model $provider ) {
 		$args = $this->prepare_mutation_input( $input );
 
-		$client_options = $this->get_client_options();
-		$header_key     = ! empty( $client_options['headerKey'] ) ? strtoupper( str_replace( '-', '_', $client_options['headerKey'] ) ) : '';
+		$header_key = isset( $input['headerKey'] ) ? strtoupper( str_replace( '-', '_', $input['headerKey'] ) ) : '';
 
 		if ( empty( $header_key ) ) {
 			return new \WP_Error(
@@ -97,7 +104,7 @@ class SiteToken extends AbstractProviderType {
 			);
 		}
 
-		if ( ! isset( $client_options['secretKey'] ) || $secret !== $client_options['secretKey'] ) {
+		if ( ! isset( $input['secretKey'] ) || $secret !== $input['secretKey'] ) {
 			return new \WP_Error(
 				'graphql-headless-login-invalid-header-token',
 				__( 'Invalid site token.', 'wp-graphql-headless-login' )
@@ -120,15 +127,13 @@ class SiteToken extends AbstractProviderType {
 			return $user;
 		}
 
-		$client_options = $this->get_login_options();
-		$meta_key       = $client_options['metaKey'] ?? 'user_email';
-		$user           = User::get_user_by( $meta_key, $data['subject_identity'] );
-
+			$meta_key = $data['metaKey'] ?? 'user_email';
+			$user     = User::get_user_by( $meta_key, $data['subject_identity'] );
 		if ( $user instanceof \WP_User ) {
 			User::link_user_identity( $user->ID, static::get_slug(), $data['subject_identity'] );
+			return $user;
 		}
-
-		return $user;
+			return null;
 	}
 
 	/**

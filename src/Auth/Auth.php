@@ -12,8 +12,8 @@ namespace WPGraphQL\Login\Auth;
 
 use GraphQL\Error\UserError;
 use WPGraphQL\Login\Auth\Client;
-use WPGraphQL\Login\Auth\ProviderConfig\Password;
 use WPGraphQL\Login\Providers\ProviderRegistry;
+use WPGraphQL\Login\Providers\ProviderType\Password;
 use WPGraphQL\Utils\Utils;
 use WP_Error;
 

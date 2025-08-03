@@ -186,10 +186,17 @@ class Settings {
 	/**
 	 * Gets the sanitized providers for the initial population of the providers screen.
 	 *
-	 * @return array<string,mixed>
+	 * @return array<string,array<string,mixed>>
 	 */
 	private static function get_providers_data(): array {
 		// @todo: sanitize special fields.
-		return ProviderRegistry::get_instance()->get_providers( false );
+		$providers = ProviderRegistry::get_instance()->get_providers();
+
+		return array_map(
+			static function ( $provider ) {
+				return $provider->to_array();
+			},
+			$providers
+		);
 	}
 }

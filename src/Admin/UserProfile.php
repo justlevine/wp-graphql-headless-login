@@ -10,10 +10,10 @@ declare( strict_types = 1 );
 
 namespace WPGraphQL\Login\Admin;
 
-use WPGraphQL\Login\Auth\ProviderConfig\Password;
 use WPGraphQL\Login\Auth\TokenManager;
 use WPGraphQL\Login\Auth\User;
 use WPGraphQL\Login\Providers\ProviderRegistry;
+use WPGraphQL\Login\Providers\ProviderType\Password;
 
 /**
  * Class - UserProfile
